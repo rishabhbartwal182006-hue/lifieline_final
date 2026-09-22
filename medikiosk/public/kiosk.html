@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MediKiosk | Patient Self-Service Intake Terminal</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <div class="kiosk-container">
+    <!-- Header -->
+    <header class="kiosk-header">
+      <div class="kiosk-title">
+        <span>✚</span> MediKiosk Self-Service Terminal
+      </div>
+      <div class="staff-toggle">
+        <input type="checkbox" id="staffModeToggle" />
+        <label for="staffModeToggle">Staff Assisted Mode</label>
+      </div>
+    </header>
+
+    <!-- Patient Demographics Section -->
+    <section class="card-section">
+      <div class="card-title">
+        <span>1. Patient Demographics & ABHA Verification</span>
+        <span id="demographicsProvenance" style="font-size: 11px; color: #2563eb; font-weight: 700;">[TOUCH-SELECTED]</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="fullName">Full Name *</label>
+          <input type="text" id="fullName" placeholder="Enter patient name" required />
+        </div>
+        <div class="form-group">
+          <label for="age">Age (Years) *</label>
+          <input type="number" id="age" min="1" max="120" required />
+        </div>
+        <div class="form-group">
+          <label for="gender">Gender *</label>
+          <select id="gender">
+            <option>--Select Gender--</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+            <option value="O">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="abhaId">ABHA ID (Ayushman Bharat Health Account)</label>
+          <input type="text" id="abhaId" placeholder="e.g. ABHA-12-3456-7890-1234" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Clinical Assessment Mode Switcher -->
+    <section class="card-section">
+      <div class="card-title">2. Clinical Assessment Mode</div>
+      <div class="mode-switcher">
+        <button type="button" class="mode-btn active" id="btnAllopathyMode">Allopathy Symptom Assessment</button>
+        <button type="button" class="mode-btn" id="btnAyushMode">AYUSH Dashavidha Pariksha</button>
+      </div>
+
+      <!-- Allopathy Form -->
+      <div id="allopathySection">
+        <div class="form-grid">
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="chiefComplaint">Chief Complaint *</label>
+            <input type="text" id="chiefComplaint" placeholder="Describe primary symptoms (e.g. chest pain radiating to left arm)" />
+          </div>
+          <div class="form-group">
+            <label for="duration">Duration</label>
+            <input type="text" id="duration" placeholder="e.g. 3 days, 2 weeks" />
+          </div>
+          <div class="form-group">
+            <label for="severity">Severity</label>
+            <select id="severity">
+              <option>--Select Severity--</option>
+              <option value="Mild">Mild</option>
+              <option value="Moderate">Moderate</option>
+              <option value="Severe">Severe</option>
+            </select>
+          </div>
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="hpiNarrative">History of Present Illness (HPI)</label>
+            <textarea id="hpiNarrative" rows="2" placeholder="Details about symptom onset, character, aggravating factors..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- AYUSH Form -->
+      <div id="ayushSection" style="display: none;">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="ayushAgni">Agni (Digestive Fire)</label>
+            <select id="ayushAgni">
+              <option value="Sama (Balanced Digestive Fire)">Sama (Balanced)</option>
+              <option value="Manda (Slow/Sluggish)">Manda (Slow)</option>
+              <option value="Tikshnagni (Intense/High)">Tikshnagni (Intense/High Appetite)</option>
+              <option value="Vishama (Irregular/Fluctuating)">Vishama (Irregular)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ayushKoshtha">Koshtha (Bowel Habit)</label>
+            <select id="ayushKoshtha">
+              <option value="Madhyama (Normal Bowel Habit)">Madhyama (Normal)</option>
+              <option value="Krura (Hard/Constipated)">Krura (Hard/Constipated)</option>
+              <option value="Mridu (Soft/Frequent)">Mridu (Soft/Frequent)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ayushMutra">Mutra (Urine Characteristics)</label>
+            <select id="ayushMutra">
+              <option value="Prabhuta Mutrata (Increased Frequency)">Prabhuta Mutrata (Increased Frequency)</option>
+              <option value="Normal Clear">Normal Clear</option>
+              <option value="Alpa Mutra (Decreased Frequency)">Alpa Mutra (Decreased)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ayushAhara">Ahara-Vihara (Diet & Lifestyle Impact)</label>
+            <input type="text" id="ayushAhara" placeholder="Dietary habits, sleep, lifestyle notes" />
+          </div>
+        </div>
+
+        <div class="advisory-box">
+          <strong>ℹ️ AYUSH Vaidya Clinical Advisory Notice:</strong><br />
+          Dashavidha Pariksha parameters (Agni, Koshtha, Mutra) are captured for preliminary triage. <strong>Prakriti (Deha Prakriti constitution)</strong> and <strong>Sattva (Mental temperament)</strong> require direct, in-person examination by the attending Vaidya.
+        </div>
+      </div>
+    </section>
+
+    <!-- Vitals Capture Station (Module 3) -->
+    <section class="card-section">
+      <div class="card-title">
+        <span>3. Vitals Capture Station</span>
+        <span id="vitalsModeBadge" style="font-size: 11px; color: #b45309; font-weight: 700;">[NO VITALS CAPTURED]</span>
+      </div>
+
+      <div class="vitals-grid">
+        <!-- BP -->
+        <div class="vital-card">
+          <div class="vital-card-label">Blood Pressure (BP Cuff)</div>
+          <div class="vital-value" id="dispBP">— / —</div>
+          <div class="vital-sub">mmHg · <span id="srcBP" class="vital-src">not captured</span></div>
+          <div class="manual-row">
+            <input type="number" id="inSys" placeholder="Systolic" min="50" max="300" inputmode="numeric" />
+            <input type="number" id="inDia" placeholder="Diastolic" min="30" max="200" inputmode="numeric" />
+          </div>
+          <div class="vital-actions">
+            <button type="button" class="btn-action" id="btnSaveBP">Save Manual</button>
+            <button type="button" class="btn-action btn-device" id="btnMeasureBP" title="Hardware not connected yet">Read Device</button>
+          </div>
+        </div>
+
+        <!-- SpO2 + HR -->
+        <div class="vital-card">
+          <div class="vital-card-label">Pulse Oximeter</div>
+          <div class="vital-value" id="dispSpO2">— %</div>
+          <div class="vital-sub">SpO₂ % · HR <span id="dispHR">—</span> bpm · <span id="srcSpO2" class="vital-src">not captured</span></div>
+          <div class="manual-row">
+            <input type="number" id="inSpO2" placeholder="SpO₂ %" min="50" max="100" inputmode="numeric" />
+            <input type="number" id="inHR" placeholder="HR bpm" min="20" max="250" inputmode="numeric" />
+          </div>
+          <div class="vital-actions">
+            <button type="button" class="btn-action" id="btnSaveSpO2">Save Manual</button>
+            <button type="button" class="btn-action btn-device" id="btnCaptureSpO2" title="Hardware not connected yet">Read Device</button>
+          </div>
+        </div>
+
+        <!-- Glucose -->
+        <div class="vital-card">
+          <div class="vital-card-label">Glucometer</div>
+          <div class="vital-value" id="dispGlucose">—</div>
+          <div class="vital-sub">mg/dL (RBS) · <span id="srcGlucose" class="vital-src">not captured</span></div>
+          <div class="manual-row">
+            <input type="number" id="inGlucose" placeholder="mg/dL" min="20" max="1000" inputmode="numeric" />
+          </div>
+          <div class="vital-actions">
+            <button type="button" class="btn-action" id="btnSaveGlucose">Save Manual</button>
+            <button type="button" class="btn-action btn-device" id="btnReadGlucose" title="Hardware not connected yet">Read Device</button>
+          </div>
+        </div>
+
+        <!-- Temperature (manual only) -->
+        <div class="vital-card">
+          <div class="vital-card-label">Temperature</div>
+          <div class="vital-value" id="dispTemp">—</div>
+          <div class="vital-sub">°C · <span id="srcTemp" class="vital-src">not captured</span></div>
+          <div class="manual-row">
+            <input type="number" id="inTemp" placeholder="°C" min="30" max="45" step="0.1" inputmode="decimal" />
+          </div>
+          <div class="vital-actions">
+            <button type="button" class="btn-action" id="btnSaveTemp">Save Manual</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Document OCR Section -->
+<section class="card-section">
+
+  <div class="card-title">
+    <span>4. Medical Document OCR</span>
+    <span
+      id="ocrStatus"
+      style="font-size: 11px; color: #2563eb; font-weight: 700;"
+    >
+      [NO DOCUMENT UPLOADED]
+    </span>
+  </div>
+
+  <div class="form-group">
+
+    <label for="ocrDocument">
+      Upload Prescription / Lab Report
+    </label>
+
+    <input
+      type="file"
+      id="ocrDocument"
+      accept=".jpg,.jpeg,.png,.webp"
+    />
+
+    <button
+      type="button"
+      class="btn-action"
+      id="btnUploadOCR"
+      style="margin-top: 10px;"
+    >
+      Scan Document with OCR
+    </button>
+
+  </div>
+
+  <div
+    id="ocrLoading"
+    style="display: none; margin-top: 10px;"
+  >
+    Processing document... Please wait.
+  </div>
+
+  <div
+    id="ocrResult"
+    style="
+      display: none;
+      margin-top: 15px;
+      padding: 15px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+    "
+  >
+
+    <h4>OCR Result</h4>
+
+    <p>
+      <strong>Document Type:</strong>
+      <span id="ocrDocumentType">—</span>
+    </p>
+
+    <p>
+      <strong>Patient Name:</strong>
+      <span id="ocrPatientName">—</span>
+    </p>
+
+    <p>
+      <strong>Age:</strong>
+      <span id="ocrAge">—</span>
+    </p>
+
+    <p>
+      <strong>Gender:</strong>
+      <span id="ocrGender">—</span>
+    </p>
+
+    <p>
+      <strong>Date:</strong>
+      <span id="ocrDate">—</span>
+    </p>
+
+    <p>
+      <strong>OCR Confidence:</strong>
+      <span id="ocrConfidence">—</span>
+    </p>
+
+    <div id="ocrMedicationsContainer">
+    </div>
+
+  </div>
+
+</section>
+
+    <!-- Submission -->
+    <button type="button" class="submit-btn" id="btnSubmitIntake">Submit Self-Service Intake Payload</button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/kiosk.js"></script>
+</body>
+</html>
+

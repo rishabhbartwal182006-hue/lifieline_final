@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: mockdock
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+
+    envVars:
+      - key: DB_PATH
+        value: /var/data/mockdock.db
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: GROQ_API_KEY
+        sync: false
+    disks:
+      - name: data
+        mountPath: /var/data
+        sizeGB: 1

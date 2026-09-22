@@ -1,0 +1,353 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  /* Noto Sans Devanagari first: the original font stack renders Hindi
+     text (status bar, transcript, start button) inconsistently on Linux/
+     Raspberry Pi Chromium builds, which is what this kiosk targets. Falls
+     back cleanly to the original stack for any Latin-only text. */
+  font-family: "Noto Sans Devanagari", "Segoe UI", Roboto, sans-serif;
+}
+
+/* Cursor auto-hides after inactivity (see app.js) instead of being
+   permanently hidden, so it's still usable for clicking the fullscreen
+   button etc. */
+body.cursor-idle {
+  cursor: none;
+}
+
+#stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+}
+
+.avatar-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+  pointer-events: none;
+}
+
+.avatar-video.active {
+  opacity: 1;
+}
+
+#listening-indicator {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+}
+
+#listening-indicator.hidden {
+  display: none;
+}
+
+.mic-dot {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #4fd1ff;
+  box-shadow: 0 0 12px rgba(79, 209, 255, 0.9);
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(79, 209, 255, 0.6);
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.pulse-ring.delay {
+  animation-delay: 0.8s;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+#status-bar {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  backdrop-filter: blur(4px);
+}
+
+#transcript-bar {
+  position: absolute;
+  bottom: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 80%;
+  max-height: 3.6em;          /* max 2 lines at 18px × 1.4 line-height */
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;      /* truncate after 2 lines with ellipsis */
+  -webkit-box-orient: vertical;
+  text-align: center;
+  color: #fff;
+  font-size: 18px;
+  line-height: 1.4;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 18px;
+  border-radius: 12px;
+  word-break: break-word;
+}
+
+#transcript-bar.hidden {
+  display: none;
+}
+
+#lang-toggle-btn {
+  position: absolute;
+  top: 20px;
+  right: 70px;
+  height: 40px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+#lang-toggle-btn:hover {
+  background: rgba(22, 143, 145, 0.7);
+  border-color: #168f91;
+}
+
+#fullscreen-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  transition: opacity 300ms ease;
+}
+
+#fullscreen-btn:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#fullscreen-btn.hidden {
+  display: none;
+}
+
+/* Kiosk mode hides the cursor globally, but the fullscreen button still
+   needs to be clickable/tappable, so restore a pointer over it. */
+#fullscreen-btn {
+  cursor: pointer;
+}
+
+#start-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  transition: opacity 300ms ease;
+}
+
+#start-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#start-btn {
+  padding: 18px 36px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+#start-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#start-btn:active {
+  transform: scale(0.97);
+}
+
+#manual-wake-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  transition: background 150ms ease, transform 150ms ease, opacity 300ms ease;
+}
+
+#manual-wake-btn:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+#manual-wake-btn:active {
+  transform: scale(0.93);
+}
+
+#manual-wake-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#report-btn {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #0d9488, #059669);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  z-index: 15;
+  transition: all 200ms ease;
+}
+
+#report-btn:hover {
+  background: linear-gradient(135deg, #0f766e, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+#report-btn:active {
+  transform: scale(0.96);
+}
+
+#report-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px);
+}
+
+#sugar-done-btn {
+  position: absolute;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 16px 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-radius: 40px;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(5, 150, 105, 0.5), 0 0 20px rgba(16, 185, 129, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 25;
+  transition: all 250ms ease;
+  animation: sugar-pulse 2s infinite;
+  white-space: nowrap;
+}
+
+@keyframes sugar-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7), 0 8px 24px rgba(5, 150, 105, 0.4);
+    transform: translateX(-50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0), 0 12px 30px rgba(5, 150, 105, 0.6);
+    transform: translateX(-50%) scale(1.04);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 8px 24px rgba(5, 150, 105, 0.4);
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+#sugar-done-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateX(-50%) scale(1.06);
+}
+
+#sugar-done-btn:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
+#sugar-done-btn.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(20px);
+}
+

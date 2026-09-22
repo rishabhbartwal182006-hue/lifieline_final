@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LifeLine 360 — Personal Home Care Station</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .card-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+    }
+    @keyframes laser {
+      0% { top: 8%; opacity: 0.2; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 8%; opacity: 0.2; }
+    }
+    .animate-laser {
+      animation: laser 2s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased">
+
+  <!-- TOP APP NAV -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand -->
+      <div class="flex items-center gap-3">
+        <a href="/landingPage.html" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-400 to-emerald-500 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-house-medical text-lg text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg font-extrabold tracking-tight text-white">LifeLine<span class="text-emerald-400">360</span></span>
+              <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Home Station</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Personal Health Companion • Node 2</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Live Hardware Status & Actions -->
+      <div class="flex items-center gap-3 text-xs">
+        <!-- Live Sensor Hardware Status Badge -->
+        <div id="camStatusContainer" class="flex items-center gap-2 bg-slate-800/90 border border-slate-700 px-3 py-1.5 rounded-lg">
+          <span id="camDot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+          <span id="camLabel" class="text-slate-300 font-medium">Bio-Optical Sensor</span>
+        </div>
+
+        <!-- Emergency SOS Button -->
+        <button onclick="triggerEmergencySOS()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all hover:scale-105">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span class="hidden sm:inline">EMERGENCY</span> SOS
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- PATIENT HERO STRIP -->
+  <section class="bg-white border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+            RK
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-bold text-slate-900" id="patientName">Ramesh Kumar</h1>
+              <span class="bg-indigo-50 text-indigo-700 text-xs font-semibold px-2.5 py-0.5 rounded-md border border-indigo-200" id="patientAge">68 yrs • Male</span>
+              <span class="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-0.5 rounded border border-slate-200" id="patientId">PT-HOME-01</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              <span class="font-semibold text-slate-700">Diagnosis:</span> Type-2 Diabetes Mellitus & Stage 1 Hypertension | 
+              <span class="font-semibold text-slate-700">Primary Physician:</span> Dr. Ananya Roy, MD (Apollo MediKiosk)
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap">
+          <!-- Adherence Summary Badge -->
+          <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
+            <div class="text-right">
+              <p class="text-[11px] text-slate-500 font-medium">Daily Medication Adherence</p>
+              <p class="text-base font-extrabold text-slate-800" id="adherenceText">0% (0/4 taken)</p>
+            </div>
+            <div class="w-12 h-12 relative flex items-center justify-center">
+              <svg class="w-12 h-12 transform -rotate-90">
+                <circle cx="24" cy="24" r="18" stroke="#e2e8f0" stroke-width="4" fill="transparent"/>
+                <circle id="adherenceCircle" cx="24" cy="24" r="18" stroke="#10b981" stroke-width="4" fill="transparent" stroke-dasharray="113" stroke-dashoffset="113"/>
+              </svg>
+              <span class="absolute text-[11px] font-bold text-slate-700" id="adherencePct">0%</span>
+            </div>
+          </div>
+
+          <!-- Take Appointment Button -->
+          <a href="appointment.html" id="btnTakeAppointment" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs px-4 py-3 rounded-xl shadow-sm hover:shadow transition-all hover:scale-[1.02]">
+            <i class="fa-solid fa-calendar-plus text-indigo-200 text-sm"></i>
+            <span>Take Appointment</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+    <!-- NOTIFICATION / ERROR ALERT BANNER -->
+    <div id="alertBanner" class="hidden bg-rose-50 border border-rose-200 text-rose-800 px-4 py-3 rounded-2xl flex items-center justify-between shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center font-bold">
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-rose-900" id="alertTitle">Hardware Notice</h4>
+          <p class="text-xs text-rose-700" id="alertDesc">Camera status update</p>
+        </div>
+      </div>
+      <button onclick="dismissAlert()" class="text-xs bg-white text-rose-700 border border-rose-300 font-bold px-3 py-1.5 rounded-lg hover:bg-rose-100">
+        Dismiss
+      </button>
+    </div>
+
+    <!-- 2-COLUMN GRID: VITALS SCANNER & MEDICATION TRACKER -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- LEFT: BIO-OPTICAL VITAL SCANNER CARD (5 COLS) -->
+      <section class="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm card-hover flex flex-col justify-between">
+        
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center text-lg border border-teal-200">
+                <i class="fa-solid fa-heart-pulse"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Bio-Optical Diagnostic Terminal</h2>
+                <p class="text-xs text-slate-500">Node 2 Personal Telemetry &amp; Vital Capture</p>
+              </div>
+            </div>
+            
+            <!-- Input Method Toggle (Bio-Scan vs Manual) -->
+            <div class="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-semibold text-slate-600">
+              <button onclick="setInputMode('camera')" id="btnInputCam" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-sm font-bold flex items-center gap-1.5">
+                <i class="fa-solid fa-expand text-emerald-600"></i> Optical Scan
+              </button>
+              <button onclick="setInputMode('manual')" id="btnInputManual" class="px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-keyboard"></i> Manual
+              </button>
+            </div>
+          </div>
+
+          <!-- Vital Type Selector -->
+          <div class="grid grid-cols-3 gap-2 p-1 bg-slate-100 rounded-xl mb-5 text-xs font-semibold text-slate-600">
+            <button onclick="setVitalMode('blood_glucose')" id="tab-glucose" class="py-2 rounded-lg bg-white text-slate-900 shadow-sm flex items-center justify-center gap-1.5 font-bold">
+              <i class="fa-solid fa-droplet text-rose-500"></i> Glucose
+            </button>
+            <button onclick="setVitalMode('blood_pressure')" id="tab-bp" class="py-2 rounded-lg hover:text-slate-900 flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-gauge-high text-blue-500"></i> BP
+            </button>
+            <button onclick="setVitalMode('spo2')" id="tab-spo2" class="py-2 rounded-lg hover:text-slate-900 flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-lungs text-teal-500"></i> SpO2/HR
+            </button>
+          </div>
+
+          <!-- VIEW 1: BIO-OPTICAL SCANNER PANEL -->
+          <div id="cameraScanPanel">
+            <div class="relative bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 rounded-2xl overflow-hidden aspect-video flex flex-col items-center justify-center p-4 text-center border border-slate-800/80 shadow-inner mb-4 select-none">
+              
+              <!-- Subtle Medical Grid Background -->
+              <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-size: 24px 24px; background-image: linear-gradient(to right, rgba(56, 189, 248, 0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(56, 189, 248, 0.15) 1px, transparent 1px);"></div>
+              
+              <!-- Reticle Corner Brackets -->
+              <div class="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-emerald-400/60 pointer-events-none"></div>
+              <div class="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-emerald-400/60 pointer-events-none"></div>
+              <div class="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-emerald-400/60 pointer-events-none"></div>
+              <div class="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-emerald-400/60 pointer-events-none"></div>
+
+              <!-- Top Telemetry Header Inside Viewport -->
+              <div class="absolute top-3 left-8 right-8 flex items-center justify-between text-[10px] font-mono tracking-wider pointer-events-none z-10">
+                <span class="text-slate-400 flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  OPTICAL SENSOR ARRAY
+                </span>
+                <span class="text-emerald-400/90 font-semibold" id="hudStatusBadge">STANDBY • READY</span>
+              </div>
+
+              <!-- VIEWPORT STATE A: STANDBY / ALIGNMENT TARGET HUD -->
+              <div id="viewportStandbyHUD" class="flex flex-col items-center justify-center relative z-5 transition-all">
+                <div class="relative mb-2">
+                  <!-- Concentric biometric circles -->
+                  <div class="w-20 h-20 rounded-full border border-emerald-500/20 flex items-center justify-center">
+                    <div class="w-16 h-16 rounded-full border border-teal-400/40 border-dashed flex items-center justify-center animate-spin" style="animation-duration: 20s;"></div>
+                  </div>
+                  <!-- Center target icon -->
+                  <div id="camVisualIcon" class="absolute inset-0 flex flex-col items-center justify-center">
+                    <i id="deviceIcon" class="fa-solid fa-droplet text-2xl text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]"></i>
+                  </div>
+                </div>
+
+                <div class="text-center">
+                  <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold font-mono px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30" id="deviceLabel">Glucometer</span>
+                  <p class="text-xs text-slate-200 font-medium mt-2" id="camStatusMsg">Align meter display with optical sensor</p>
+                  <p class="text-[10px] text-slate-400 mt-0.5 font-sans">High-precision AI computer vision recognition</p>
+                </div>
+              </div>
+
+              <!-- VIEWPORT STATE B: ACTIVE VALIDATED READING HUD (Shown instead of raw camera photo) -->
+              <div id="viewportResultHUD" class="hidden absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 z-10 text-center transition-all">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/30 text-emerald-400 text-[11px] font-bold tracking-wide mb-2 uppercase">
+                  <i class="fa-solid fa-circle-check text-xs"></i>
+                  <span>Diagnostic Reading Verified</span>
+                </div>
+                <div class="flex items-baseline gap-2 my-1">
+                  <span class="text-4xl font-black text-white tracking-tight font-mono" id="hudResultValue">120</span>
+                  <span class="text-base font-bold text-emerald-400" id="hudResultUnit">mg/dL</span>
+                </div>
+                <div class="flex items-center gap-3 mt-1 text-xs">
+                  <span class="text-slate-400 text-[11px]" id="hudResultDevice">Device: Accu-Chek Active</span>
+                  <span class="text-emerald-400/90 text-[11px] font-mono bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/40" id="hudResultConf">99% Confidence</span>
+                </div>
+                <button onclick="resetScannerView()" type="button" class="mt-3 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-[11px] font-semibold transition-all border border-slate-700 flex items-center gap-1.5 cursor-pointer">
+                  <i class="fa-solid fa-arrow-rotate-right text-[10px]"></i>
+                  <span>Ready for Next Scan</span>
+                </button>
+              </div>
+
+              <!-- VIEWPORT STATE C: SCANNING SCANLINE RETICLE OVERLAY -->
+              <div id="scanOverlay" class="hidden absolute inset-0 bg-emerald-950/70 border border-emerald-400/50 flex flex-col items-center justify-center z-20 backdrop-blur-[2px]">
+                <!-- Moving Laser Scanning Beam -->
+                <div class="absolute inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_15px_#10b981] animate-laser"></div>
+                
+                <div class="bg-slate-950/90 text-emerald-400 px-4 py-2.5 rounded-xl text-xs font-bold border border-emerald-500/40 flex items-center gap-2.5 shadow-2xl">
+                  <i class="fa-solid fa-circle-notch fa-spin text-sm text-emerald-400"></i>
+                  <span>Analyzing Bio-Optical Telemetry...</span>
+                </div>
+                <p class="text-[10px] text-emerald-300/80 font-mono mt-2 tracking-wider">AI SPECTRAL RECOGNITION ACTIVE</p>
+              </div>
+
+            </div>
+
+            <!-- Action Button -->
+            <button id="scanBtn" onclick="triggerHomeScan()" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.99] text-white text-sm font-bold rounded-2xl shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <i class="fa-solid fa-expand"></i>
+              <span>Initiate Optical Diagnostic Scan</span>
+            </button>
+          </div>
+
+          <!-- VIEW 2: MANUAL ENTRY PANEL -->
+          <div id="manualEntryPanel" class="hidden bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-4 space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1" id="manualInputLabel">Blood Glucose Reading (mg/dL):</label>
+              <input type="number" id="manualValue" placeholder="e.g. 125" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+            
+            <div id="bpSecondaryContainer" class="hidden">
+              <label class="block text-xs font-bold text-slate-700 mb-1">Diastolic BP (mmHg):</label>
+              <input type="number" id="manualSecondaryValue" placeholder="e.g. 80" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Notes / Timing (Optional):</label>
+              <input type="text" id="manualNotes" placeholder="e.g. Fasting morning test" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none" />
+            </div>
+
+            <button onclick="submitManualVital()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-2">
+              <i class="fa-solid fa-check"></i>
+              <span>Save & Sync Reading to Doctor</span>
+            </button>
+          </div>
+
+          <!-- LATEST RECORDED RESULT (No fake defaults) -->
+          <div class="mt-4 pt-3 border-t border-slate-100">
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Latest Recorded Reading</p>
+            
+            <div id="latestResultBox" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center text-base font-bold" id="resultIconBox">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-800" id="resultLabel">No readings recorded yet</p>
+                  <div class="flex items-baseline gap-1.5" id="resultValueRow">
+                    <span class="text-xs text-slate-500" id="resultValue">Initiate optical scan or enter manually above</span>
+                    <span class="text-xs text-slate-500" id="resultUnit"></span>
+                    <span class="hidden ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold" id="resultBadge"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="text-right text-[11px] text-slate-400" id="resultMeta">
+                —
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- RIGHT: MEDICATION REMINDER & ADHERENCE TIMELINE (7 COLS) -->
+      <section class="lg:col-span-7 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm card-hover flex flex-col justify-between">
+        
+        <div>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg border border-indigo-200">
+                <i class="fa-solid fa-pills"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-slate-900">Daily Medication Schedule</h2>
+                <p class="text-xs text-slate-500">Live compliance tracking synced with Dr. Ananya Roy</p>
+              </div>
+            </div>
+            
+            <button onclick="playReminderChime()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-200 flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-volume-high text-indigo-500"></i>
+              <span>Audio Chime</span>
+            </button>
+          </div>
+
+          <!-- Interactive Medication Timeline List -->
+          <div id="medListContainer" class="space-y-3">
+            <div class="p-6 text-center text-slate-400 text-xs">
+              <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+              <p>Loading prescription schedule...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adherence Footer -->
+        <div class="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2 text-slate-600">
+            <i class="fa-solid fa-shield-halved text-emerald-600"></i>
+            <span>Recorded doses are logged with live timestamp.</span>
+          </div>
+          <button onclick="addMedicationModal()" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-plus text-xs"></i> Add Prescription
+          </button>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- RECORDED VITALS TELEMETRY & TREND CHARTS -->
+    <section class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm card-hover">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-lg font-bold text-slate-900">Recorded Vital Trends</h3>
+            <span class="bg-teal-50 text-teal-700 border border-teal-200 text-[11px] font-bold px-2 py-0.5 rounded-full">Live Recorded Data</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5" id="trendSubtitle">Only shows readings that have actually been recorded</p>
+        </div>
+
+        <!-- Chart Metric Toggle -->
+        <div class="flex items-center gap-2 text-xs">
+          <button onclick="toggleChartMetric('glucose')" id="btnMetricGlucose" class="px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-white shadow-sm">
+            Blood Glucose (mg/dL)
+          </button>
+          <button onclick="toggleChartMetric('bp')" id="btnMetricBP" class="px-3 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">
+            Blood Pressure & HR
+          </button>
+        </div>
+      </div>
+
+      <!-- Chart Container or Clean Empty State -->
+      <div class="h-64 w-full relative">
+        <div id="chartEmptyState" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-6 text-center">
+          <i class="fa-solid fa-chart-line text-3xl mb-2 text-slate-300"></i>
+          <p class="text-xs font-bold text-slate-600">No Historical Vitals Recorded Yet</p>
+          <p class="text-[11px] text-slate-400 max-w-sm mt-1">Initiate an optical diagnostic scan or enter a manual reading above to begin logging telemetry for Dr. Ananya Roy.</p>
+        </div>
+        <canvas id="vitalsChart"></canvas>
+      </div>
+
+      <!-- Target Indicators -->
+      <div class="mt-6 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+        <div class="p-3 bg-slate-50 rounded-2xl">
+          <p class="text-[11px] text-slate-500 font-medium">Target Glucose</p>
+          <p class="text-sm font-extrabold text-slate-800">80 - 130 mg/dL</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-2xl">
+          <p class="text-[11px] text-slate-500 font-medium">Target BP</p>
+          <p class="text-sm font-extrabold text-slate-800">&lt; 135 / 85 mmHg</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-2xl">
+          <p class="text-[11px] text-slate-500 font-medium">Total Recorded Today</p>
+          <p class="text-sm font-extrabold text-teal-600" id="recordedCount">0 readings</p>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-2xl">
+          <p class="text-[11px] text-slate-500 font-medium">Doctor Portal Link</p>
+          <p class="text-sm font-extrabold text-indigo-600">Connected</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const PATIENT_ID = 'PT-HOME-01';
+    let currentVitalMode = 'blood_glucose';
+    let inputMode = 'camera'; // 'camera' | 'manual'
+    let isCameraOnline = false;
+    let vitalsChartInstance = null;
+    let chartData = [];
+    let currentMetric = 'glucose';
+
+    // Audio chime for medicine reminders
+    function playReminderChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880.00, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.6);
+      } catch (e) {}
+    }
+
+    function setCamStatusUI(online) {
+      isCameraOnline = online;
+      const dot = document.getElementById('camDot');
+      const label = document.getElementById('camLabel');
+      const msg = document.getElementById('camStatusMsg');
+      const hudStatusBadge = document.getElementById('hudStatusBadge');
+
+      if (online) {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+        if (label) label.innerHTML = '<span class="text-emerald-400 font-semibold">Bio-Optical Sensor Active</span>';
+        if (msg) msg.innerHTML = '<span class="text-emerald-400 font-semibold">Optical Sensor Active</span> — Align display in view';
+        if (hudStatusBadge && !hudStatusBadge.dataset.custom) hudStatusBadge.innerText = 'ONLINE • CALIBRATED';
+      } else {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+        if (label) label.innerHTML = '<span class="text-slate-300 font-semibold">Bio-Optical Sensor</span>';
+        if (msg) msg.innerHTML = '<span class="text-slate-200 font-medium">Align meter display with optical sensor</span>';
+        if (hudStatusBadge && !hudStatusBadge.dataset.custom) hudStatusBadge.innerText = 'STANDBY • READY';
+      }
+    }
+
+    // Check Live Hardware Sensor Connection
+    async function checkCameraStatus() {
+      try {
+        const res = await fetch('/api/v1/vitals/status?target=home');
+        const data = await res.json();
+        setCamStatusUI(data.esp32_online === true);
+      } catch (err) {
+        setCamStatusUI(false);
+      }
+    }
+
+    // Toggle Input Mode (Bio-Scan vs Manual)
+    function setInputMode(mode) {
+      inputMode = mode;
+      const camBtn = document.getElementById('btnInputCam');
+      const manualBtn = document.getElementById('btnInputManual');
+      const camPanel = document.getElementById('cameraScanPanel');
+      const manualPanel = document.getElementById('manualEntryPanel');
+
+      if (mode === 'camera') {
+        camBtn.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-sm font-bold flex items-center gap-1.5';
+        manualBtn.className = 'px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 flex items-center gap-1.5';
+        camPanel.classList.remove('hidden');
+        manualPanel.classList.add('hidden');
+      } else {
+        manualBtn.className = 'px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-sm font-bold flex items-center gap-1.5';
+        camBtn.className = 'px-2.5 py-1 rounded-md text-slate-600 hover:text-slate-900 flex items-center gap-1.5';
+        camPanel.classList.add('hidden');
+        manualPanel.classList.remove('hidden');
+        document.getElementById('manualValue').focus();
+      }
+    }
+
+    // Toggle Vital Mode (Glucose, BP, SpO2)
+    function setVitalMode(mode) {
+      currentVitalMode = mode;
+      resetScannerView();
+      const modes = ['glucose', 'bp', 'spo2'];
+      modes.forEach(m => {
+        const tab = document.getElementById(`tab-${m}`);
+        if (tab) {
+          const isSelected = (m === (mode === 'blood_glucose' ? 'glucose' : (mode === 'blood_pressure' ? 'bp' : 'spo2')));
+          tab.className = isSelected
+            ? 'py-2 rounded-lg bg-white text-slate-900 shadow-sm flex items-center justify-center gap-1.5 font-bold'
+            : 'py-2 rounded-lg hover:text-slate-900 flex items-center justify-center gap-1.5';
+        }
+      });
+
+      const icon = document.getElementById('deviceIcon');
+      const label = document.getElementById('deviceLabel');
+      const manualLabel = document.getElementById('manualInputLabel');
+      const bpSec = document.getElementById('bpSecondaryContainer');
+
+      if (mode === 'blood_glucose') {
+        icon.className = 'fa-solid fa-droplet text-2xl text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.4)]';
+        label.innerText = 'Glucometer';
+        manualLabel.innerText = 'Blood Glucose Reading (mg/dL):';
+        bpSec.classList.add('hidden');
+      } else if (mode === 'blood_pressure') {
+        icon.className = 'fa-solid fa-gauge-high text-2xl text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.4)]';
+        label.innerText = 'BP Monitor';
+        manualLabel.innerText = 'Systolic BP (mmHg):';
+        bpSec.classList.remove('hidden');
+      } else {
+        icon.className = 'fa-solid fa-lungs text-2xl text-teal-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.4)]';
+        label.innerText = 'Pulse Oximeter';
+        manualLabel.innerText = 'SpO2 Percentage (%):';
+        bpSec.classList.add('hidden');
+      }
+    }
+
+    // Show Validated Result in Viewport HUD (Replaces raw camera photo)
+    function showHudResult(reading) {
+      const standbyHUD = document.getElementById('viewportStandbyHUD');
+      const resultHUD = document.getElementById('viewportResultHUD');
+      const hudStatusBadge = document.getElementById('hudStatusBadge');
+      const valEl = document.getElementById('hudResultValue');
+      const unitEl = document.getElementById('hudResultUnit');
+      const devEl = document.getElementById('hudResultDevice');
+      const confEl = document.getElementById('hudResultConf');
+
+      if (!standbyHUD || !resultHUD) return;
+
+      const val = reading.value || reading.blood_glucose || reading.bp_systolic || '—';
+      const sec = reading.bp_diastolic ? `/${reading.bp_diastolic}` : '';
+      valEl.innerText = `${val}${sec}`;
+      unitEl.innerText = reading.unit || (currentVitalMode === 'blood_glucose' ? 'mg/dL' : (currentVitalMode === 'blood_pressure' ? 'mmHg' : '%'));
+      devEl.innerText = reading.device ? `Device: ${reading.device}` : 'Device: Bio-Optical Verified';
+      const conf = reading.confidence ? `${Math.round(reading.confidence * 100)}% Confidence` : 'Verified Reading';
+      confEl.innerText = conf;
+
+      standbyHUD.classList.add('hidden');
+      resultHUD.classList.remove('hidden');
+      if (hudStatusBadge) {
+        hudStatusBadge.innerText = 'VERIFIED • LOGGED';
+        hudStatusBadge.dataset.custom = 'true';
+        hudStatusBadge.className = 'text-emerald-400 font-bold';
+      }
+    }
+
+    // Reset Viewport to Standby Target HUD
+    function resetScannerView() {
+      const standbyHUD = document.getElementById('viewportStandbyHUD');
+      const resultHUD = document.getElementById('viewportResultHUD');
+      const hudStatusBadge = document.getElementById('hudStatusBadge');
+
+      if (resultHUD) resultHUD.classList.add('hidden');
+      if (standbyHUD) standbyHUD.classList.remove('hidden');
+      if (hudStatusBadge) {
+        delete hudStatusBadge.dataset.custom;
+        hudStatusBadge.innerText = isCameraOnline ? 'ONLINE • CALIBRATED' : 'STANDBY • READY';
+        hudStatusBadge.className = 'text-emerald-400/90 font-semibold';
+      }
+    }
+
+    // Trigger Bio-Optical Diagnostic Scan
+    async function triggerHomeScan() {
+      const scanBtn = document.getElementById('scanBtn');
+      const scanOverlay = document.getElementById('scanOverlay');
+      const hudStatusBadge = document.getElementById('hudStatusBadge');
+      
+      scanBtn.disabled = true;
+      scanOverlay.classList.remove('hidden');
+      if (hudStatusBadge) hudStatusBadge.innerText = 'SCANNING • PROCESSING';
+
+      try {
+        const res = await fetch(`/api/v1/patient/${PATIENT_ID}/vitals/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            device_target: 'home',
+            slot_type: currentVitalMode
+          })
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.reading) {
+          updateLatestReadingUI(data.reading);
+          showHudResult(data.reading);
+          loadVitalsHistory();
+          showAlert('Reading Recorded Successfully', `Captured ${data.reading.value} ${data.reading.unit || ''} via Bio-Optical Sensor.`);
+        } else {
+          showAlert('Diagnostic Scan Notice', data.error || 'Optical sensor could not identify numeric display clearly. Please align meter display steadily with the sensor.');
+        }
+      } catch (err) {
+        showAlert('Sensor Link Notice', 'Failed to communicate with vital scanner service. Please verify terminal connectivity.');
+      } finally {
+        scanBtn.disabled = false;
+        scanOverlay.classList.add('hidden');
+      }
+    }
+
+    // Submit Manual Vital Reading
+    async function submitManualVital() {
+      const valInput = document.getElementById('manualValue');
+      const val = valInput.value.trim();
+      if (!val) {
+        alert('Please enter a measurement value.');
+        return;
+      }
+
+      const secondaryInput = document.getElementById('manualSecondaryValue');
+      const secondaryVal = secondaryInput ? secondaryInput.value.trim() : null;
+      const notes = document.getElementById('manualNotes').value.trim();
+
+      const payload = {
+        manual_vital: {
+          vital_type: currentVitalMode,
+          value: Number(val),
+          secondary_value: secondaryVal ? Number(secondaryVal) : null,
+          notes: notes || 'Manual reading recorded at home'
+        }
+      };
+
+      try {
+        const res = await fetch(`/api/v1/patient/${PATIENT_ID}/vitals/scan`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (data.success && data.reading) {
+          updateLatestReadingUI(data.reading);
+          valInput.value = '';
+          if (secondaryInput) secondaryInput.value = '';
+          document.getElementById('manualNotes').value = '';
+          loadVitalsHistory();
+        }
+      } catch (err) {
+        showAlert('Error', 'Failed to save vital reading.');
+      }
+    }
+
+    // Update Latest Reading Card
+    function updateLatestReadingUI(r) {
+      document.getElementById('resultLabel').innerText = `${r.vital_type.replace('_', ' ').toUpperCase()} READING`;
+      const val = r.value || r.blood_glucose || r.bp_systolic || '—';
+      const sec = r.bp_diastolic ? `/${r.bp_diastolic}` : '';
+      document.getElementById('resultValue').innerText = `${val}${sec}`;
+      document.getElementById('resultValue').className = 'text-xl font-black text-slate-900';
+      document.getElementById('resultUnit').innerText = r.unit || '';
+      
+      const badge = document.getElementById('resultBadge');
+      badge.classList.remove('hidden');
+      if (r.status === 'alert') {
+        badge.className = 'ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800';
+        badge.innerText = 'Critical Alert';
+        showAlert('Abnormal Reading Flagged', `Recorded reading of ${val} ${r.unit} alerted directly to Dr. Ananya Roy.`);
+      } else {
+        badge.className = 'ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+        badge.innerText = 'Normal';
+      }
+
+      document.getElementById('resultMeta').innerText = r.dateLabel || 'Just now';
+      document.getElementById('resultIconBox').className = 'w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center text-base font-bold shadow-sm';
+      document.getElementById('resultIconBox').innerHTML = '<i class="fa-solid fa-check"></i>';
+    }
+
+    // Load Vitals History & Chart
+    async function loadVitalsHistory() {
+      try {
+        const res = await fetch(`/api/v1/patient/${PATIENT_ID}/vitals-history`);
+        const data = await res.json();
+        if (data.success) {
+          chartData = data.vitals || [];
+          document.getElementById('recordedCount').innerText = `${chartData.length} readings`;
+
+          if (chartData.length > 0) {
+            const latest = chartData[chartData.length - 1];
+            updateLatestReadingUI(latest);
+          }
+          renderChart();
+        }
+      } catch (err) {
+        console.error('Error loading vitals history:', err);
+      }
+    }
+
+    function toggleChartMetric(metric) {
+      currentMetric = metric;
+      if (metric === 'glucose') {
+        document.getElementById('btnMetricGlucose').className = 'px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-white shadow-sm';
+        document.getElementById('btnMetricBP').className = 'px-3 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      } else {
+        document.getElementById('btnMetricBP').className = 'px-3 py-1.5 rounded-xl font-bold bg-slate-900 text-white shadow-sm';
+        document.getElementById('btnMetricGlucose').className = 'px-3 py-1.5 rounded-xl font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
+      }
+      renderChart();
+    }
+
+    function renderChart() {
+      const emptyState = document.getElementById('chartEmptyState');
+      const canvas = document.getElementById('vitalsChart');
+
+      if (!chartData || chartData.length === 0) {
+        emptyState.classList.remove('hidden');
+        if (vitalsChartInstance) {
+          vitalsChartInstance.destroy();
+          vitalsChartInstance = null;
+        }
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      const ctx = canvas.getContext('2d');
+      const labels = chartData.map(d => d.dateLabel || new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+      if (vitalsChartInstance) {
+        vitalsChartInstance.destroy();
+      }
+
+      if (currentMetric === 'glucose') {
+        const glucosePoints = chartData.filter(d => d.vital_type === 'blood_glucose');
+        const gLabels = glucosePoints.map(d => d.dateLabel || 'Recorded');
+        const gValues = glucosePoints.map(d => d.blood_glucose || d.value);
+
+        vitalsChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: gLabels.length > 0 ? gLabels : labels,
+            datasets: [{
+              label: 'Blood Glucose (mg/dL)',
+              data: gValues.length > 0 ? gValues : chartData.map(d => d.value),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointBackgroundColor: '#10b981',
+              pointRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { min: 70, max: 220, grid: { color: '#f1f5f9' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      } else {
+        const bpPoints = chartData.filter(d => d.vital_type === 'blood_pressure');
+        const bLabels = bpPoints.map(d => d.dateLabel || 'Recorded');
+        const sysValues = bpPoints.map(d => d.bp_systolic || d.value);
+        const diaValues = bpPoints.map(d => d.bp_diastolic || 80);
+
+        vitalsChartInstance = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: bLabels.length > 0 ? bLabels : labels,
+            datasets: [
+              {
+                label: 'Systolic BP (mmHg)',
+                data: sysValues,
+                borderColor: '#3b82f6',
+                borderWidth: 2.5,
+                tension: 0.3
+              },
+              {
+                label: 'Diastolic BP (mmHg)',
+                data: diaValues,
+                borderColor: '#93c5fd',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: { min: 50, max: 180, grid: { color: '#f1f5f9' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+      }
+    }
+
+    // Fetch and render medications
+    async function loadMedications() {
+      try {
+        const res = await fetch(`/api/v1/patient/${PATIENT_ID}/medications`);
+        const data = await res.json();
+        if (data.success) {
+          renderMedications(data.medications, data.complianceRate, data.takenCount, data.totalMeds);
+        }
+      } catch (err) {
+        console.error('Error loading medications:', err);
+      }
+    }
+
+    function renderMedications(meds, complianceRate, takenCount, totalMeds) {
+      document.getElementById('adherenceText').innerText = `${complianceRate}% (${takenCount}/${totalMeds} taken)`;
+      document.getElementById('adherencePct').innerText = `${complianceRate}%`;
+      const offset = 113 - (113 * complianceRate) / 100;
+      document.getElementById('adherenceCircle').style.strokeDashoffset = offset;
+
+      const container = document.getElementById('medListContainer');
+      container.innerHTML = '';
+
+      meds.forEach(med => {
+        const isTaken = med.taken;
+        const slotColor = med.slot === 'Morning' ? 'amber' : (med.slot === 'Afternoon' ? 'blue' : 'indigo');
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border transition-all flex items-center justify-between ${isTaken ? 'bg-slate-50 border-slate-200 opacity-80' : 'bg-white border-slate-200 shadow-sm'}`;
+        card.innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <button onclick="toggleMed('${med.id}')" class="w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isTaken ? 'bg-emerald-500 text-white' : 'border-2 border-slate-300 text-transparent hover:border-emerald-500'}">
+              <i class="fa-solid fa-check text-xs"></i>
+            </button>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-bold ${isTaken ? 'line-through text-slate-500' : 'text-slate-900'}">${med.name}</span>
+                <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded">${med.dosage}</span>
+                <span class="bg-${slotColor}-50 text-${slotColor}-700 border border-${slotColor}-200 text-[10px] font-bold px-2 py-0.5 rounded-full">${med.slot} • ${med.timeLabel}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">${med.instructions} • <span class="italic text-slate-400">${med.purpose}</span></p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] font-semibold ${isTaken ? 'text-emerald-600' : 'text-amber-600'}">
+              ${isTaken ? `<i class="fa-solid fa-circle-check"></i> Taken ${med.lastTakenTime || ''}` : '<i class="fa-regular fa-clock"></i> Pending'}
+            </span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    async function toggleMed(medId) {
+      playReminderChime();
+      try {
+        const res = await fetch(`/api/v1/patient/${PATIENT_ID}/medications/${medId}/toggle`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          loadMedications();
+        }
+      } catch (err) {
+        console.error('Error toggling medication:', err);
+      }
+    }
+
+    function showAlert(title, desc) {
+      document.getElementById('alertTitle').innerText = title;
+      document.getElementById('alertDesc').innerText = desc;
+      document.getElementById('alertBanner').classList.remove('hidden');
+    }
+    function dismissAlert() {
+      document.getElementById('alertBanner').classList.add('hidden');
+    }
+
+    function triggerEmergencySOS() {
+      if (confirm("DISPATCH EMERGENCY SOS to Dr. Ananya Roy and hospital emergency command?")) {
+        fetch(`/api/v1/patient/${PATIENT_ID}/sos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: 'Emergency SOS dispatched by patient at home' })
+        }).then(r => r.json()).then(d => {
+          showAlert('EMERGENCY SOS ACTIVE', d.message);
+        });
+      }
+    }
+
+    function addMedicationModal() {
+      const name = prompt("Enter medication name (e.g., Amlodipine):");
+      if (!name) return;
+      const dosage = prompt("Enter dosage (e.g., 5 mg):", "5 mg");
+      const slot = prompt("Enter slot (Morning / Afternoon / Night):", "Night");
+
+      fetch(`/api/v1/patient/${PATIENT_ID}/medications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, dosage, slot, instructions: 'Take with water', purpose: 'Prescribed Care' })
+      }).then(() => loadMedications());
+    }
+
+    // Init & Polling
+    window.addEventListener('DOMContentLoaded', () => {
+      checkCameraStatus();
+      loadMedications();
+      loadVitalsHistory();
+
+      // Poll camera connection state every 4 seconds
+      setInterval(checkCameraStatus, 4000);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <title>NOVA — Health Checkup Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <!--
+    Set this to your main project's real origin (e.g.
+    "https://your-main-project.example.com") once you know it, so
+    postMessage calls between the two are locked to that origin instead of
+    "*". See public/js/patientBridge.js for the full contract. Leave blank
+    ("") for local development across ports.
+  -->
+  <meta name="host-app-origin" content="*" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage">
+    <video id="videoA" class="avatar-video active" muted playsinline autoplay loop></video>
+    <video id="videoB" class="avatar-video" muted playsinline autoplay loop></video>
+
+    <div id="listening-indicator" class="hidden">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring delay"></div>
+      <div class="mic-dot"></div>
+    </div>
+
+    <div id="status-bar">
+      <span id="status-text">Tap "Start" to begin</span>
+    </div>
+
+    <div id="transcript-bar" class="hidden">
+      <div id="user-transcript"></div>
+    </div>
+
+    <button id="lang-toggle-btn" title="Switch Language (हिन्दी / English)" aria-label="Switch Language">
+      🌐 हिन्दी
+    </button>
+
+    <button id="fullscreen-btn" title="Enter fullscreen" aria-label="Enter fullscreen">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>
+      </svg>
+    </button>
+
+    <!-- Prominent button for blood sugar test completion -->
+    <button id="sugar-done-btn" class="hidden" title="मशीन स्लॉट में रख दी — बटन दबाएं" aria-label="मशीन स्लॉट में रख दी — बटन दबाएं">
+      🔘 मशीन स्लॉट में रख दी — बटन दबाएं
+    </button>
+
+    <!--
+      Manual override for wake-word detection: presses straight into the
+      same flow "Hey Nova" would trigger, skipping voice detection
+      entirely. Useful when the mic/wake-word isn't reliable yet, or for
+      a quiet/noisy environment where saying "Hey Nova" out loud isn't
+      practical.
+    -->
+    <button id="manual-wake-btn" class="hidden" title="Talk to Nova now" aria-label="Talk to Nova now">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/>
+      </svg>
+    </button>
+
+    <!--
+      Browsers require a real user gesture (a click/tap) before they'll
+      grant mic access or let audio actually play. Auto-starting the wake
+      word listener on page load (as this app used to) means the very
+      first "Hey Nova" often lands before that permission is resolved and
+      just gets missed. This overlay forces one explicit tap that unlocks
+      both mic access and audio playback together, so listening is
+      guaranteed to be live before anyone tries to wake Nova.
+    -->
+    <div id="start-overlay">
+      <button id="start-btn">बात करने के लिए दबाएं</button>
+    </div>
+  </div>
+
+  <script src="js/sharedAudioContext.js"></script>
+  <script src="js/videoController.js"></script>
+  <script src="js/micCapture.js"></script>
+  <script src="js/patientBridge.js"></script>
+  <script src="js/conversation.js"></script>
+  <script src="js/wakeword.js"></script>
+  <script src="js/backupAudioData.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

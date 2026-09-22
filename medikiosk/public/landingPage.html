@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>MediKiosk — Intelligent Point-of-Care Triage &amp; Clinical Intelligence</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans for clinical modernity, Fira Code for telemetry -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Three.js for 3D Holographic Heart & AI Nurse Hologram -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- External Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body id="top">
+
+  <!-- =======================================================
+       CUSTOM ANIMATED MEDICAL CURSOR
+       - Default: Glowing green reticle / cross target
+       - Hover: Expands into pulsing outer ring + bright green dot
+  ======================================================== -->
+  <div class="custom-cursor" id="customCursor" aria-hidden="true">
+    <div class="cursor-reticle">
+      <span class="reticle-line reticle-top"></span>
+      <span class="reticle-line reticle-bottom"></span>
+      <span class="reticle-line reticle-left"></span>
+      <span class="reticle-line reticle-right"></span>
+    </div>
+    <div class="cursor-ring"></div>
+    <div class="cursor-dot"></div>
+  </div>
+
+  <!-- =======================================================
+       TOP CLINICAL TELEMETRY STATUS BAR
+  ======================================================== -->
+  <aside class="top-telemetry-bar" aria-label="Clinical Telemetry Status">
+    <div class="telemetry-left">
+      <span class="live-pulse">
+        <span class="pulse-indicator"></span>
+        POINT-OF-CARE TELEMETRY ACTIVE
+      </span>
+      <span>NODE: KL-01 · LATENCY &lt; 42ms</span>
+    </div>
+    <div class="telemetry-tags">
+      <span class="telemetry-tag">HL7 FHIR R4</span>
+      <span class="telemetry-tag">ABDM M1/M2/M3</span>
+      <span class="telemetry-tag">HPR AUTHENTICATED</span>
+      <span class="telemetry-tag">REAL-TIME TRIAGE ENGINE</span>
+    </div>
+  </aside>
+
+  <!-- =======================================================
+       NAVIGATION BAR
+  ======================================================== -->
+  <nav>
+    <div class="logo-container">
+      <div class="med-cross-icon">+</div>
+      <a href="#top" class="logo">
+        MediKiosk<span class="logo-dot">.</span>
+      </a>
+    </div>
+
+    <span class="nav-badge">
+      POINT-OF-CARE PLATFORM
+    </span>
+
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#nurse" class="nav-link">AI Nurse</a>
+      <a href="#workflow" class="nav-link">Workflow</a>
+      <a href="#triage" class="nav-link">Triage</a>
+      <a href="#vitals" class="nav-link">Vitals</a>
+      <a href="#portals" class="nav-link">Portals</a>
+      <a href="appointment.html" class="nav-link" style="color: #6366f1; font-weight: 700;">📅 Book Appointment</a>
+      <a href="/dashboard/index.html" class="nav-doctor">
+        Doctor Dashboard →
+      </a>
+    </div>
+  </nav>
+
+  <!-- =======================================================
+       HERO SECTION WITH 3D CARDIAC CORE & TELEMETRY WAVES
+  ======================================================== -->
+  <header class="hero">
+    <!-- Continuous Live Animated SVG ECG Telemetry Wave -->
+    <div class="ecg-wave-container">
+      <svg class="ecg-svg-wave" viewBox="0 0 2400 120" preserveAspectRatio="none">
+        <path
+          d="M0,60 L200,60 L220,60 L235,15 L250,105 L265,35 L280,80 L295,60 L600,60 L620,60 L635,15 L650,105 L665,35 L680,80 L695,60 L1000,60 L1200,60 L1400,60 L1420,60 L1435,15 L1450,105 L1465,35 L1480,80 L1495,60 L1800,60 L1820,60 L1835,15 L1850,105 L1865,35 L1880,80 L1895,60 L2400,60"
+          fill="none"
+          stroke="#10b981"
+          stroke-width="2.5"
+        />
+      </svg>
+    </div>
+
+    <div class="hero-eyebrow">
+      Intelligent Clinical Workflow
+    </div>
+
+    <h1 class="hero-title">
+      Smarter care,<br>
+      <strong>from the first interaction</strong><span class="hero-dot">.</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      MediKiosk connects patient assessment, symptom intelligence,
+      vital collection and real-time triage into one streamlined
+      point-of-care workflow for patients and doctors.
+    </p>
+
+    <!-- 3D Interactive Hero Canvas (Hero 3D – DNA Genome Scanner) -->
+    <div class="hero-3d-wrapper">
+      <div class="hero-3d-container" id="hero3dContainer">
+        <canvas id="heroHeartCanvas"></canvas>
+
+        <!-- Floating Holographic Telemetry HUD Badges -->
+        <div class="hero-hud-badge badge-top-left">
+          <span class="badge-dot-emerald"></span>
+          <span>TRIAGE: ACTIVE SENSING</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Actions (Links kept strictly the same) -->
+    <div class="hero-actions">
+      <a
+        href="/patientTerminal/dist/index.html"
+        class="btn btn-primary"
+      >
+        Start Patient Assessment →
+      </a>
+
+      <a
+        href="/dashboard/index.html"
+        class="btn btn-secondary"
+      >
+        Open Doctor Dashboard
+      </a>
+    </div>
+
+    <!-- Hero Terminal Pipeline -->
+    <div class="hero-terminal">
+      <span>INPUT</span>
+      symptoms + questionnaire + vitals
+      &nbsp;→&nbsp;
+      <span>TRIAGE</span>
+      &nbsp;→&nbsp;
+      <span>CLINICAL REVIEW</span>
+    </div>
+  </header>
+
+  <!-- =======================================================
+       TICKER
+  ======================================================== -->
+  <div class="ticker">
+    <div class="ticker-track">
+      <div class="ticker-item"><span class="ticker-dot"></span>Patient Kiosk</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>SOCRATES Assessment</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Red-Flag Detection</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Vital Monitoring</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Real-Time Triage</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Doctor Dashboard</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Structured Events</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Clinical Workflow</div>
+
+      <!-- Duplicate for infinite seamless marquee -->
+      <div class="ticker-item"><span class="ticker-dot"></span>Patient Kiosk</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>SOCRATES Assessment</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Red-Flag Detection</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Vital Monitoring</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Real-Time Triage</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Doctor Dashboard</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Structured Events</div>
+      <div class="ticker-item"><span class="ticker-dot"></span>Clinical Workflow</div>
+    </div>
+  </div>
+
+  <!-- =======================================================
+       PLATFORM OVERVIEW WITH 3D TILT CARDS
+  ======================================================== -->
+  <section class="section overview" id="overview">
+    <div class="section-eyebrow reveal">
+      — The Platform
+    </div>
+
+    <h2 class="section-title reveal">
+      One workflow connecting
+      <strong>patient and doctor.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk gathers structured information at the point of care,
+      evaluates incoming patient events and presents the resulting
+      triage context to the clinical team.
+    </p>
+
+    <div class="overview-grid">
+      <article class="tilt-card overview-card large reveal">
+        <div class="card-label">
+          <span class="status-dot"></span>
+          Real-time clinical workflow
+        </div>
+
+        <h3 class="overview-heading">
+          From patient input to clinical review.
+        </h3>
+
+        <p class="overview-text">
+          Symptoms, questionnaire answers and vital readings are
+          transformed into structured patient events. The triage
+          engine evaluates those events and produces an
+          Emergency, Urgent or Routine workflow state.
+        </p>
+      </article>
+
+      <div class="overview-side">
+        <article class="tilt-card mini-card reveal">
+          <div class="mini-icon">+</div>
+          <h3 class="mini-title">Structured Assessment</h3>
+          <p class="mini-text">
+            Guided symptom and questionnaire collection keeps
+            important patient information organized.
+          </p>
+        </article>
+
+        <article class="tilt-card mini-card reveal">
+          <div class="mini-icon">→</div>
+          <h3 class="mini-title">Clinical Handoff</h3>
+          <p class="mini-text">
+            Triage context and relevant patient information move
+            directly into the doctor-facing workflow.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       AI NURSE ASSISTANT (3D HOLOGRAPHIC NURSE AVATAR)
+  ======================================================== -->
+  <section class="section ai-nurse-section" id="nurse">
+    <div class="section-eyebrow reveal">
+      — Clinical Intelligence
+    </div>
+
+    <h2 class="section-title reveal">
+      AI Nurse Assistant at the
+      <strong>point of care.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      A conversational first point of contact that guides patients through symptom collection,
+      asks relevant follow-up questions and helps structure the information needed for clinical assessment.
+    </p>
+
+    <!-- 3D Holographic AI Nurse Assistant Showcase -->
+    <div class="ai-nurse-showcase reveal">
+      <div class="ai-nurse-content">
+        <div class="card-label" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border-color: rgba(16, 185, 129, 0.35);">
+          <span class="badge-dot-emerald"></span>
+          3D Interactive Holographic Companion
+        </div>
+
+        <h3 class="ai-nurse-title">
+          AI Nurse Assistant
+        </h3>
+
+        <p class="ai-nurse-desc">
+          A conversational first point of contact that guides
+          patients through symptom collection, asks relevant
+          follow-up questions and helps structure the information
+          needed for clinical assessment.
+        </p>
+
+        <!-- Interactive Speech Bubble -->
+        <div class="nurse-chat-bubble">
+          <div class="nurse-chat-author">
+            <span class="status-dot"></span>
+            AI Nurse Companion · Live Telemetry
+          </div>
+          <div class="nurse-chat-msg" id="nurseChatMsg">
+            "Hello! I am your AI Point-of-Care assistant. Please share your symptoms or begin vitals capture below."
+          </div>
+        </div>
+
+        <!-- Quick Action Prompt Triggers -->
+        <div class="nurse-quick-actions">
+          <button class="nurse-action-pill" data-action="triage">✦ Check Triage Priority</button>
+          <button class="nurse-action-pill" data-action="chest">♥ Assess Chest Discomfort</button>
+          <button class="nurse-action-pill" data-action="home">📶 Sync Home Vitals</button>
+        </div>
+
+        <span class="feature-code" style="background: rgba(16, 185, 129, 0.2); color: #34d399; margin-top: 24px; border-color: rgba(16, 185, 129, 0.35);">
+          PATIENT ↔ AI NURSE
+        </span>
+      </div>
+
+      <!-- 3D Holographic Nurse Model with Eye-Tracking and Hover 360 Spin -->
+      <div class="ai-nurse-canvas-box">
+        <canvas id="nurseHoloCanvas"></canvas>
+        <span class="nurse-hover-hint">Hover / Click to Trigger 360° Rotation</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       CORE CAPABILITIES (FEATURES GRID)
+  ======================================================== -->
+  <section class="section features" id="features">
+    <div class="section-eyebrow reveal">
+      — Core Capabilities
+    </div>
+
+    <h2 class="section-title reveal">
+      An intelligent assistant at the
+      <strong>point of care.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk combines an AI Nurse Assistant with structured
+      assessment, real-time triage and clinical review to guide
+      the patient journey from first interaction to doctor.
+    </p>
+
+    <div class="feature-grid">
+      <!-- PATIENT KIOSK -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">+</div>
+        <h3 class="feature-title">Patient Kiosk</h3>
+        <p class="feature-text">
+          A guided point-of-care interface for collecting symptoms,
+          medical information, questionnaire responses and available
+          vital readings.
+        </p>
+        <span class="feature-code">STRUCTURED INTAKE</span>
+      </article>
+
+      <!-- SOCRATES -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">◌</div>
+        <h3 class="feature-title">SOCRATES Assessment</h3>
+        <p class="feature-text">
+          Structured symptom assessment covering site, onset,
+          character, radiation, severity, timing and associated
+          symptoms.
+        </p>
+        <span class="feature-code">SEVERITY 0–10</span>
+      </article>
+
+      <!-- RED FLAGS -->
+      <article class="tilt-card feature-card red reveal">
+        <div class="feature-icon">!</div>
+        <h3 class="feature-title">Red-Flag Detection</h3>
+        <p class="feature-text">
+          Patient responses, symptoms and readings can be evaluated
+          for signals that require higher-priority clinical attention.
+        </p>
+        <span class="feature-code">RISK SIGNALS</span>
+      </article>
+
+      <!-- VITALS -->
+      <article class="tilt-card feature-card blue reveal">
+        <div class="feature-icon">♥</div>
+        <h3 class="feature-title">Vital Monitoring</h3>
+        <p class="feature-text">
+          Structured readings including heart rate, blood pressure,
+          SpO₂, temperature, respiratory rate and blood glucose.
+        </p>
+        <span class="feature-code">VITAL EVENTS</span>
+      </article>
+
+      <!-- QUESTIONNAIRE -->
+      <article class="tilt-card feature-card amber reveal">
+        <div class="feature-icon">◇</div>
+        <h3 class="feature-title">Smart Questionnaires</h3>
+        <p class="feature-text">
+          Guided questioning across red-flag screening,
+          cardiovascular, respiratory, neurological, trauma,
+          medication and medical history.
+        </p>
+        <span class="feature-code">ADAPTIVE INPUT</span>
+      </article>
+
+      <!-- TRIAGE -->
+      <article class="tilt-card feature-card red reveal">
+        <div class="feature-icon">↗</div>
+        <h3 class="feature-title">Real-Time Triage Engine</h3>
+        <p class="feature-text">
+          Structured patient events are validated and evaluated
+          to produce Emergency, Urgent or Routine workflow states.
+        </p>
+        <span class="feature-code">EVENT → RULES → TRIAGE</span>
+      </article>
+
+      <!-- DOCTOR -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">✓</div>
+        <h3 class="feature-title">Doctor Dashboard</h3>
+        <p class="feature-text">
+          Gives clinicians the patient context, triage state,
+          vital information and priority workflow needed for review.
+        </p>
+        <span class="feature-code">CLINICAL REVIEW</span>
+      </article>
+
+      <!-- AUDIT -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">≡</div>
+        <h3 class="feature-title">Event Traceability</h3>
+        <p class="feature-text">
+          Patient interactions and contributing events remain
+          structured so the resulting triage context can be traced
+          through the workflow.
+        </p>
+        <span class="feature-code">AUDIT CONTEXT</span>
+      </article>
+
+      <!-- AI NURSE SUMMARY CARD -->
+      <article class="tilt-card feature-card reveal">
+        <div class="feature-icon">✦</div>
+        <h3 class="feature-title">AI Nurse Assistant</h3>
+        <p class="feature-text">
+          A conversational first point of contact that guides
+          patients through symptom collection, asks relevant
+          follow-up questions and helps structure the information
+          needed for clinical assessment.
+        </p>
+        <span class="feature-code">PATIENT ↔ AI NURSE</span>
+      </article>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       TRIAGE ENGINE & 3D INTERACTIVE PRIORITY NODES
+  ======================================================== -->
+  <section class="section triage" id="triage">
+    <div class="section-eyebrow reveal">
+      — Triage Engine
+    </div>
+
+    <h2 class="section-title reveal">
+      Turn patient signals into
+      <strong>clear workflow states.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk uses structured patient events and rule evaluation
+      to organize cases into workflow priorities for clinical review.
+    </p>
+
+    <div class="triage-panel reveal">
+      <div class="triage-info">
+        <div class="card-label">
+          <span class="status-dot"></span>
+          Event-driven processing
+        </div>
+
+        <div class="triage-flow">
+          <div class="triage-step">
+            <span class="triage-step-number">01</span>
+            <span>Patient symptoms and answers collected</span>
+          </div>
+
+          <div class="triage-step">
+            <span class="triage-step-number">02</span>
+            <span>Patient event is structured and validated</span>
+          </div>
+
+          <div class="triage-step">
+            <span class="triage-step-number">03</span>
+            <span>Rules and red-flag signals are evaluated</span>
+          </div>
+
+          <div class="triage-step">
+            <span class="triage-step-number">04</span>
+            <span>Triage result is surfaced for clinical review</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3D Interactive Priority Nodes -->
+      <div class="triage-visual">
+        <!-- EMERGENCY -->
+        <div class="triage-level level-emergency">
+          <div class="triage-left">
+            <span class="triage-marker emergency"></span>
+            <div>
+              <div class="triage-name">EMERGENCY</div>
+              <div class="triage-desc">Immediate doctor alert / emergency workflow</div>
+            </div>
+          </div>
+          <span class="triage-action" style="color: #ef4444; background: #fef2f2;">PRIORITY 01</span>
+        </div>
+
+        <!-- URGENT -->
+        <div class="triage-level level-urgent">
+          <div class="triage-left">
+            <span class="triage-marker urgent"></span>
+            <div>
+              <div class="triage-name">URGENT</div>
+              <div class="triage-desc">Priority clinical review</div>
+            </div>
+          </div>
+          <span class="triage-action" style="color: #f59e0b; background: #fffbeb;">PRIORITY 02</span>
+        </div>
+
+        <!-- ROUTINE -->
+        <div class="triage-level level-routine">
+          <div class="triage-left">
+            <span class="triage-marker routine"></span>
+            <div>
+              <div class="triage-name">ROUTINE</div>
+              <div class="triage-desc">Standard clinical queue</div>
+            </div>
+          </div>
+          <span class="triage-action" style="color: #10b981; background: #ecfdf5;">PRIORITY 03</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       SYSTEM WORKFLOW
+  ======================================================== -->
+  <section class="section workflow" id="workflow">
+    <div class="section-eyebrow reveal">
+      — System Flow
+    </div>
+
+    <h2 class="section-title reveal">
+      A continuous path from
+      <strong>input to review.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      Every stage has a clear role in moving structured information
+      from the patient kiosk toward the clinical dashboard.
+    </p>
+
+    <div class="workflow-box reveal">
+      <div class="flow">
+        <div class="flow-node">
+          <strong>PATIENT</strong>
+          <span>symptoms</span>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>QUESTIONNAIRE</strong>
+          <span>answers</span>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>VITALS</strong>
+          <span>readings</span>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>EVENT</strong>
+          <span>validated</span>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>TRIAGE</strong>
+          <span>rules</span>
+        </div>
+        <div class="flow-arrow">→</div>
+
+        <div class="flow-node">
+          <strong>DOCTOR</strong>
+          <span>review</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       VITALS MONITORING WITH 3D ELASTIC METALLIC SYMBOLS
+  ======================================================== -->
+  <section class="section vitals" id="vitals">
+    <div class="section-eyebrow reveal">
+      — Vital Monitoring
+    </div>
+
+    <h2 class="section-title reveal">
+      Structured signals,
+      <strong>one clinical context.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      MediKiosk supports multiple vital categories as part of
+      the patient assessment workflow.
+    </p>
+
+    <!-- 6 Vital Cards with 3D Elastic Physics on Hover -->
+    <div class="vitals-grid">
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">♥</div>
+        <div class="vital-name">Heart Rate</div>
+        <div class="vital-code">BPM</div>
+      </div>
+
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">⌁</div>
+        <div class="vital-name">Blood Pressure</div>
+        <div class="vital-code">SYS / DIA</div>
+      </div>
+
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">O₂</div>
+        <div class="vital-name">SpO₂</div>
+        <div class="vital-code">%</div>
+      </div>
+
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">°</div>
+        <div class="vital-name">Temperature</div>
+        <div class="vital-code">°C</div>
+      </div>
+
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">↕</div>
+        <div class="vital-name">Respiratory Rate</div>
+        <div class="vital-code">/ MIN</div>
+      </div>
+
+      <div class="vital-card reveal">
+        <div class="vital-3d-symbol">◈</div>
+        <div class="vital-name">Blood Glucose</div>
+        <div class="vital-code">MG/DL</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       PORTALS
+  ======================================================== -->
+  <section class="section portals" id="portals">
+    <div class="section-eyebrow reveal">
+      — Access
+    </div>
+
+    <h2 class="section-title reveal">
+      Two interfaces.
+      <strong>One workflow.</strong>
+    </h2>
+
+    <p class="section-description reveal">
+      Patients begin the assessment from the kiosk. Doctors
+      receive the resulting clinical workflow in the dashboard.
+    </p>
+
+    <div class="portal-grid">
+      <!-- PATIENT PORTAL -->
+      <article class="tilt-card portal patient reveal">
+        <div class="portal-label">Patient Portal</div>
+        <h3 class="portal-title">Start your assessment.</h3>
+        <p class="portal-text">
+          Enter symptoms, answer guided questions and provide
+          available vital information through the MediKiosk
+          patient experience.
+        </p>
+        <a href="/patientTerminal/dist/index.html" class="portal-btn">
+          Open Patient Kiosk →
+        </a>
+        <div class="portal-bg"></div>
+      </article>
+
+      <!-- DOCTOR PORTAL -->
+      <article class="tilt-card portal doctor reveal">
+        <div class="portal-label">Doctor Portal</div>
+        <h3 class="portal-title">Review the clinical queue.</h3>
+        <p class="portal-text">
+          View incoming encounters, triage states, patient
+          context and priority information through the
+          doctor-facing dashboard.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <a href="/dashboard/index.html" class="portal-btn">
+            Open Doctor Dashboard →
+          </a>
+          <a href="/doctor-appointments" class="portal-btn" style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); font-size: 13px;">
+            📅 Manage Appointments →
+          </a>
+        </div>
+        <div class="portal-bg"></div>
+      </article>
+
+      <!-- HOME CARE COMPANION (NODE 2) -->
+      <article class="tilt-card portal home-care reveal">
+        <div class="portal-label" style="color: #059669; font-weight: 700;">
+          Node 2 — Home Care Hub
+        </div>
+        <h3 class="portal-title">Personal Home Station &amp; RPM</h3>
+        <p class="portal-text">
+          Daily vitals capture via Bio-Optical Diagnostic Sensor, medicine reminder adherence tracking, and live telemetry to doctor.
+        </p>
+        <a href="/home-patient" class="portal-btn">
+          Open Home Patient Hub →
+        </a>
+        <div class="portal-bg"></div>
+      </article>
+
+      <!-- APPOINTMENT BOOKING PORTAL -->
+      <article class="tilt-card portal appointment reveal" style="border-top: 2px solid #6366f1;">
+        <div class="portal-label" style="color: #6366f1; font-weight: 700;">
+          Tele-Booking &amp; OPD
+        </div>
+        <h3 class="portal-title">Book Doctor Appointment</h3>
+        <p class="portal-text">
+          Reserve your OPD consultation slot from home, choose department and time, and receive an instant priority token without waiting in queue.
+        </p>
+        <a href="/appointment.html" class="portal-btn" style="background: #6366f1; border-color: #6366f1;">
+          Book Appointment →
+        </a>
+        <div class="portal-bg"></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       FINAL CALL TO ACTION
+  ======================================================== -->
+  <section class="cta">
+    <div class="cta-inner">
+      <div>
+        <div class="section-eyebrow">— Get started</div>
+        <h2 class="cta-title">
+          Connect the first interaction
+          <strong>to clinical review.</strong>
+        </h2>
+        <p class="cta-text">
+          MediKiosk brings patient intake, structured assessment,
+          triage and doctor review together in a single point-of-care
+          workflow.
+        </p>
+
+        <div class="cta-actions">
+          <a href="/patientTerminal/dist/index.html" class="btn btn-primary">
+            Start Patient Kiosk →
+          </a>
+          <a href="/dashboard/index.html" class="btn btn-secondary">
+            Doctor Dashboard
+          </a>
+        </div>
+      </div>
+
+      <div class="cta-mark">
+        <div class="cta-mark-inner">+</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================
+       FOOTER
+  ======================================================== -->
+  <footer>
+    <div class="footer-logo">
+      <div class="med-cross-icon" style="width: 26px; height: 26px; font-size: 1rem;">+</div>
+      MediKiosk<span class="logo-dot">.</span>
+    </div>
+
+    <div class="footer-links">
+      <a href="#features" class="footer-link">Features</a>
+      <a href="#nurse" class="footer-link">AI Nurse</a>
+      <a href="#triage" class="footer-link">Triage</a>
+      <a href="#workflow" class="footer-link">Workflow</a>
+      <a href="#vitals" class="footer-link">Vitals</a>
+      <a href="#portals" class="footer-link">Portals</a>
+    </div>
+
+    <div class="footer-copy">
+      MEDIKIOSK · POINT-OF-CARE TRIAGE PLATFORM · HL7 FHIR R4
+    </div>
+  </footer>
+
+  <!-- External JavaScript -->
+  <script src="script.js"></script>
+
+</body>
+</html>

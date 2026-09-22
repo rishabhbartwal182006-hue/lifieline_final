@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+.flaskenv
+# Database files (local dev)
+*.db
+
+# Test scripts
+verify.py
+fix.py
+test_*.py
+test_*.js
+
+# OS / editor noise
+.DS_Store
+.vscode/
+.idea/

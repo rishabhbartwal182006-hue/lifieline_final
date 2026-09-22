@@ -1,0 +1,807 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --mk-bg: #f6f8fa;
+  --mk-surface: #ffffff;
+  --mk-ink: #101b2d;
+  --mk-ink-soft: #526176;
+  --mk-ink-faint: #7c899b;
+  --mk-border: #e1e7ee;
+  --mk-patient: #2563a6;
+  --mk-patient-tint: #eaf2fb;
+  --mk-patient-hover: #1d4f85;
+  --mk-doctor: #0e7c66;
+  --mk-doctor-tint: #e7f5f1;
+  --mk-live: #1e9e5a;
+  --mk-live-tint: #e7f7ee;
+  --mk-focus-ring: rgba(37, 99, 166, 0.15);
+}
+
+body {
+  background: var(--mk-bg);
+  color: var(--mk-ink);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.ap-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* ===== Nav ===== */
+.ap-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.ap-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--mk-ink);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.ap-nav-brand:hover {
+  opacity: 0.85;
+}
+
+.ap-nav-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--mk-ink);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ap-nav-back {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--mk-ink-soft);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+}
+
+.ap-nav-back:hover {
+  color: var(--mk-ink);
+  background: #ffffff;
+  border-color: var(--mk-border);
+  box-shadow: 0 1px 2px rgba(16, 27, 45, 0.04);
+}
+
+/* ===== Header ===== */
+.ap-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.ap-title {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 3.5vw, 2.3rem);
+  letter-spacing: -0.02em;
+  color: var(--mk-ink);
+  margin-bottom: 10px;
+}
+
+.ap-subtitle {
+  font-size: 0.95rem;
+  color: var(--mk-ink-soft);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== Stepper ===== */
+.ap-stepper {
+  display: flex;
+  list-style: none;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-bottom: 32px;
+  padding: 0;
+}
+
+.ap-stepper::before {
+  content: '';
+  position: absolute;
+  top: 15px;
+  left: 36px;
+  right: 36px;
+  height: 2px;
+  background: var(--mk-border);
+  z-index: 0;
+}
+
+.ap-step {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mk-ink-faint);
+  text-align: center;
+  flex: 1;
+}
+
+.ap-step span {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mk-surface);
+  border: 2px solid var(--mk-border);
+  color: var(--mk-ink-faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.ap-step.is-active {
+  color: var(--mk-patient);
+  font-weight: 700;
+}
+
+.ap-step.is-active span {
+  background: var(--mk-patient);
+  border-color: var(--mk-patient);
+  color: #ffffff;
+  box-shadow: 0 0 0 4px var(--mk-patient-tint);
+}
+
+.ap-step.is-completed {
+  color: var(--mk-live);
+}
+
+.ap-step.is-completed span {
+  background: var(--mk-live);
+  border-color: var(--mk-live);
+  color: #ffffff;
+}
+
+/* ===== Panel Container ===== */
+.ap-panel-wrap {
+  background: var(--mk-surface);
+  border: 1px solid var(--mk-border);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(16, 27, 45, 0.04), 0 12px 28px -8px rgba(16, 27, 45, 0.06);
+}
+
+.ap-panel {
+  display: none;
+}
+
+.ap-panel.is-active {
+  display: block;
+  animation: apFadeIn 0.25s ease-out;
+}
+
+@keyframes apFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ap-panel-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--mk-ink);
+  margin-bottom: 6px;
+}
+
+.ap-panel-hint {
+  font-size: 0.88rem;
+  color: var(--mk-ink-soft);
+  margin-bottom: 24px;
+}
+
+/* ===== Step 1: Department Grid ===== */
+.ap-dept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.ap-dept {
+  background: #ffffff;
+  border: 1.5px solid var(--mk-border);
+  border-radius: 14px;
+  padding: 16px;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--mk-ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(16, 27, 45, 0.03);
+}
+
+.ap-dept:hover {
+  transform: translateY(-2px);
+  border-color: var(--mk-patient);
+  box-shadow: 0 8px 20px -6px rgba(37, 99, 166, 0.15);
+}
+
+.ap-dept.is-selected {
+  background: var(--mk-patient-tint);
+  border-color: var(--mk-patient);
+  color: var(--mk-patient);
+  box-shadow: 0 0 0 2px var(--mk-patient);
+}
+
+.ap-dept-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: var(--mk-patient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+}
+
+.ap-dept.is-selected .ap-dept-icon {
+  background: #ffffff;
+  color: var(--mk-patient);
+  box-shadow: 0 2px 6px rgba(37, 99, 166, 0.15);
+}
+
+/* ===== Step 2: Date & Time ===== */
+.ap-field-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--mk-ink-soft);
+  margin-bottom: 8px;
+}
+
+.ap-date-input {
+  width: 100%;
+  max-width: 280px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--mk-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--mk-ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.92rem;
+  outline: none;
+  margin-bottom: 24px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ap-date-input:focus {
+  border-color: var(--mk-patient);
+  box-shadow: 0 0 0 3px var(--mk-focus-ring);
+}
+
+.ap-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.ap-slot {
+  background: #ffffff;
+  border: 1.5px solid var(--mk-border);
+  border-radius: 10px;
+  padding: 12px 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--mk-ink);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.ap-slot:hover:not(.is-booked):not(:disabled) {
+  border-color: var(--mk-patient);
+  color: var(--mk-patient);
+  background: var(--mk-patient-tint);
+}
+
+.ap-slot.is-selected {
+  background: var(--mk-patient) !important;
+  color: #ffffff !important;
+  border-color: var(--mk-patient) !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 166, 0.25);
+}
+
+.ap-slot.is-booked,
+.ap-slot:disabled {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* ===== Step 3: Patient Details Form ===== */
+.ap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ap-form-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-form-row--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ap-form input,
+.ap-form select,
+.ap-form textarea {
+  width: 100%;
+  border: 1.5px solid var(--mk-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: var(--mk-ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ap-form input::placeholder,
+.ap-form textarea::placeholder {
+  color: var(--mk-ink-faint);
+}
+
+.ap-form input:focus,
+.ap-form select:focus,
+.ap-form textarea:focus {
+  border-color: var(--mk-patient);
+  box-shadow: 0 0 0 3px var(--mk-focus-ring);
+}
+
+.ap-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.ap-optional {
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--mk-ink-faint);
+}
+
+/* ===== Step 4: Confirmation & Token ===== */
+.ap-confirm-head {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.ap-confirm-check {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #15803d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.ap-token-card {
+  max-width: 640px;
+  margin: 0 auto 28px;
+  background: #ffffff;
+  border: 1.5px solid var(--mk-border);
+  border-radius: 18px;
+  display: flex;
+  box-shadow: 0 8px 24px -4px rgba(16, 27, 45, 0.08);
+  overflow: hidden;
+  position: relative;
+}
+
+.ap-token-stub {
+  flex: 1;
+  padding: 24px 28px;
+}
+
+.ap-token-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--mk-ink-faint);
+  margin-bottom: 4px;
+}
+
+.ap-token-number {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--mk-patient);
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+}
+
+.ap-token-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+.ap-token-k {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mk-ink-faint);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.ap-token-v {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--mk-ink);
+}
+
+.ap-token-v--accent {
+  color: var(--mk-patient);
+}
+
+.ap-token-perf {
+  width: 0;
+  border-left: 2px dashed #cbd5e1;
+  position: relative;
+  margin: 12px 0;
+}
+
+.ap-token-perf::before,
+.ap-token-perf::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--mk-surface);
+  border: 1.5px solid var(--mk-border);
+  z-index: 2;
+}
+
+.ap-token-perf::before {
+  top: -20px;
+}
+
+.ap-token-perf::after {
+  bottom: -20px;
+}
+
+.ap-token-slip {
+  width: 180px;
+  background: #f8fafc;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-left: 1px solid #f1f5f9;
+}
+
+.ap-token-time-big {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--mk-patient);
+  margin: 6px 0;
+}
+
+.ap-token-note {
+  font-size: 0.78rem;
+  color: var(--mk-ink-soft);
+  font-weight: 500;
+}
+
+/* =========================================================
+   APPOINTMENT NOTIFICATIONS — Step 4 status cards
+   Sleek medical green/white theme with soft glassmorphism
+   and a slide-in entrance. Layered on top of the page's
+   existing blue (--mk-patient) accent, not replacing it.
+========================================================== */
+:root {
+  --mk-notif-green: #10b981;
+  --mk-notif-green-dark: #059669;
+  --mk-notif-border: #a7f3d0;
+  --mk-notif-green-tint: #ecfdf5;
+  --mk-notif-amber: #f59e0b;
+  --mk-notif-amber-tint: #fffbeb;
+  --mk-notif-red: #ef4444;
+  --mk-notif-red-tint: #fef2f2;
+}
+
+.ap-status-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  max-width: 520px;
+  margin: 0 auto 20px;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  border: 1.5px solid var(--mk-notif-border);
+  box-shadow: 0 14px 34px rgba(16, 185, 129, 0.12);
+  animation: apStatusSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ap-status-card--rejected {
+  border-color: #fecaca;
+  box-shadow: 0 14px 34px rgba(239, 68, 68, 0.1);
+}
+
+@keyframes apStatusSlideIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ap-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 13px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.ap-status-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ap-status-badge--pending {
+  background: var(--mk-notif-amber-tint);
+  color: var(--mk-notif-amber);
+  border: 1px solid #fde68a;
+}
+
+.ap-status-badge--approved {
+  background: var(--mk-notif-green-tint);
+  color: var(--mk-notif-green-dark);
+  border: 1px solid var(--mk-notif-border);
+}
+
+.ap-status-badge--rejected {
+  background: var(--mk-notif-red-tint);
+  color: var(--mk-notif-red);
+  border: 1px solid #fecaca;
+}
+
+.ap-pending-pulse {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--mk-notif-amber);
+  margin-bottom: 2px;
+  animation: apPendingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes apPendingPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35); }
+  50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+}
+
+/* Token card gets a subtle emerald hover-lift once confirmed —
+   it's the artifact the patient will screenshot/download, so it
+   earns a little extra polish. */
+.ap-token-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.ap-token-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 16px 36px -4px rgba(16, 185, 129, 0.18);
+}
+
+/* ===== Buttons & Action Bars ===== */
+.ap-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--mk-border);
+}
+
+.ap-actions--center {
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ap-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 12px 22px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.ap-btn--primary {
+  background: var(--mk-patient);
+  color: #ffffff;
+  border: 1px solid var(--mk-patient);
+  box-shadow: 0 2px 4px rgba(37, 99, 166, 0.15);
+}
+
+.ap-btn--primary:hover:not(:disabled) {
+  background: var(--mk-patient-hover);
+  border-color: var(--mk-patient-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 166, 0.25);
+}
+
+.ap-btn--primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.ap-btn--ghost {
+  background: #ffffff;
+  color: var(--mk-ink-soft);
+  border: 1.5px solid var(--mk-border);
+}
+
+.ap-btn--ghost:hover {
+  background: #f8fafc;
+  color: var(--mk-ink);
+  border-color: #cbd5e1;
+}
+
+/* ===== Responsive adjustments ===== */
+@media (max-width: 640px) {
+  .ap-page {
+    padding: 16px 14px 40px;
+  }
+
+  .ap-panel-wrap {
+    padding: 22px 16px;
+    border-radius: 16px;
+  }
+
+  .ap-stepper {
+    font-size: 0.72rem;
+  }
+
+  .ap-step span {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .ap-form-row--split {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .ap-token-card {
+    flex-direction: column;
+  }
+
+  .ap-token-perf {
+    width: 100%;
+    height: 0;
+    border-left: none;
+    border-top: 2px dashed #cbd5e1;
+    margin: 0;
+  }
+
+  .ap-token-perf::before {
+    left: -20px;
+    top: -9px;
+  }
+
+  .ap-token-perf::after {
+    right: -20px;
+    left: auto;
+    bottom: -9px;
+  }
+
+  .ap-token-slip {
+    width: 100%;
+    padding: 18px;
+    border-left: none;
+    border-top: 1px solid #f1f5f9;
+  }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  .ap-nav,
+  .ap-header,
+  .ap-stepper,
+  .ap-actions,
+  .ap-confirm-head {
+    display: none !important;
+  }
+
+  .ap-panel-wrap {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .ap-token-card {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    margin: 40px auto !important;
+  }
+}

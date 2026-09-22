@@ -1,0 +1,125 @@
+{
+  "info": {
+    "_postman_id": "c983a129-441f-4b09-91ef-001928471182",
+    "name": "MediKiosk Task 5 Backend APIs",
+    "description": "Postman Collection for MediKiosk Pure Backend Architecture (Ingestion, Dashboard, HPR Write-Lock, FHIR R4 Bundle, ABDM Sync)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "1. Kiosk Multi-Modal Ingestion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"intakeId\": \"INTAKE-2026-0902-8841\",\n  \"abhaId\": \"ABHA-91-8273-4651-0982\",\n  \"patientDemographics\": {\n    \"fullName\": \"Ramesh Chandra Sharma\",\n    \"gender\": \"M\",\n    \"age\": 54,\n    \"provenanceMeta\": {\n      \"provenance\": \"touch-selected\",\n      \"confidence\": 1.0\n    }\n  },\n  \"vitals\": {\n    \"bloodPressure\": {\n      \"systolic\": { \"value\": 165, \"unit\": \"mmHg\", \"provenanceMeta\": { \"provenance\": \"device-captured\", \"confidence\": 0.99 } },\n      \"diastolic\": { \"value\": 102, \"unit\": \"mmHg\", \"provenanceMeta\": { \"provenance\": \"device-captured\", \"confidence\": 0.99 } }\n    },\n    \"spo2\": { \"value\": 97, \"unit\": \"%\", \"provenanceMeta\": { \"provenance\": \"device-captured\", \"confidence\": 0.98 } },\n    \"bloodGlucose\": { \"value\": 245, \"unit\": \"mg/dL\", \"provenanceMeta\": { \"provenance\": \"device-captured\", \"confidence\": 0.96 } }\n  },\n  \"chiefComplaints\": [\n    {\n      \"symptom\": \"Acute Frontal Headache & Dizziness\",\n      \"duration\": \"3 days\",\n      \"severity\": \"Severe\",\n      \"provenanceMeta\": { \"provenance\": \"patient-spoken\", \"confidence\": 0.94 }\n    }\n  ],\n  \"hpi\": {\n    \"narrative\": \"Patient reports progressive headache for 3 days.\",\n    \"provenanceMeta\": { \"provenance\": \"patient-spoken\", \"confidence\": 0.92 }\n  },\n  \"ayushParameters\": {\n    \"nadi\": \"Pitta-Vata\",\n    \"jihva\": \"Sama\",\n    \"mutra\": \"Prabhuta Mutrata\",\n    \"agni\": \"Tikshnagni\",\n    \"provenanceMeta\": { \"provenance\": \"touch-selected\", \"confidence\": 1.0 }\n  },\n  \"ocrDocuments\": [\n    {\n      \"documentId\": \"DOC-OCR-9921\",\n      \"documentType\": \"Prescription\",\n      \"extractedText\": \"Rx: Tab Telmisartan 40mg OD\",\n      \"extractedMedications\": [{ \"name\": \"Telmisartan\", \"dosage\": \"40mg\", \"frequency\": \"OD\" }],\n      \"provenanceMeta\": { \"provenance\": \"scanned-document\", \"confidence\": 0.95 }\n    }\n  ],\n  \"triage\": {\n    \"triageLevel\": \"PRIORITY\",\n    \"urgencyScore\": 7,\n    \"recommendedDepartment\": \"General Medicine\"\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/v1/kiosk/intake",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "v1", "kiosk", "intake"]
+        }
+      }
+    },
+    {
+      "name": "2. Get Doctor Dashboard Summary",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/v1/clinical/patient/ABHA-91-8273-4651-0982/summary",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "v1", "clinical", "patient", "ABHA-91-8273-4651-0982", "summary"]
+        }
+      }
+    },
+    {
+      "name": "3. Provision Doctor HPR Token",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hprId\": \"HPR-IN-9876543210\",\n  \"doctorName\": \"Dr. Rajesh Sharma, MD\",\n  \"registrationNumber\": \"MCI-2018-883921\",\n  \"role\": \"DOCTOR\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/v1/hpr/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "v1", "hpr", "login"]
+        }
+      }
+    },
+    {
+      "name": "4. Commit Clinical Record (HPR Authorized)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{HPR_TOKEN}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"intakeId\": \"INTAKE-2026-0902-8841\",\n  \"doctorNotes\": \"Verified patient intake data and approved transition to permanent EHR.\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/v1/clinical/commit",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "v1", "clinical", "commit"]
+        }
+      }
+    },
+    {
+      "name": "5. Get HL7 FHIR (R4) Bundle",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/api/v1/clinical/fhir/bundle/INTAKE-2026-0902-8841",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["api", "v1", "clinical", "fhir", "bundle", "INTAKE-2026-0902-8841"]
+        }
+      }
+    }
+  ]
+}

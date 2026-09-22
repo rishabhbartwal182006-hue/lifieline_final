@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Book an Appointment — MediKiosk</title>
+<link rel="stylesheet" href="appointment.css" />
+</head>
+<body>
+
+<div class="ap-page">
+
+  <!-- ===== Nav ===== -->
+  <nav class="ap-nav">
+    <a href="index.html" class="ap-nav-brand">
+      <span class="ap-nav-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2v20M2 12h20" />
+        </svg>
+      </span>
+      MediKiosk
+    </a>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="/doctor-appointments" class="ap-nav-back" style="color: #4f46e5; font-weight: 700;">👨‍⚕️ Doctor Review Queue →</a>
+      <a href="homePatient.html" class="ap-nav-back">← Back to home</a>
+    </div>
+  </nav>
+
+  <!-- ===== Header ===== -->
+  <header class="ap-header">
+    <h1 class="ap-title">Book Your Appointment</h1>
+    <p class="ap-subtitle">
+      Reserve your slot from home. Pick a department, choose a time that works for you,
+      and we'll issue a token telling you exactly when to arrive — no waiting in line to book.
+    </p>
+  </header>
+
+  <!-- ===== Stepper ===== -->
+  <ol class="ap-stepper" id="apStepper">
+    <li class="ap-step is-active" data-step="1"><span>1</span>Department</li>
+    <li class="ap-step" data-step="2"><span>2</span>Date &amp; Time</li>
+    <li class="ap-step" data-step="3"><span>3</span>Your Details</li>
+    <li class="ap-step" data-step="4"><span>4</span>Confirmation</li>
+  </ol>
+
+  <main class="ap-panel-wrap">
+
+    <!-- ===== Step 1: Department ===== -->
+    <section class="ap-panel is-active" id="panel-1">
+      <h2 class="ap-panel-title">Which department do you need?</h2>
+      <p class="ap-panel-hint">Not sure? Choose General Medicine — a doctor will redirect you if needed.</p>
+
+      <div class="ap-dept-grid" id="deptGrid">
+        <button class="ap-dept" data-dept="General Medicine" data-code="GEN">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2v6.4a4.8 4.8 0 0 0 9.6 0V2" /><path d="M9.6 15.2v2.4a4 4 0 1 0 8 0v-2" /><circle cx="19.6" cy="14.4" r="1.6" /></svg>
+          </span>
+          General Medicine
+        </button>
+        <button class="ap-dept" data-dept="Cardiology" data-code="CARD">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 8.6c0 5-8.8 10.4-8.8 10.4S3.2 13.6 3.2 8.6a4.8 4.8 0 0 1 8.8-2.6 4.8 4.8 0 0 1 8.8 2.6z" /><path d="M6 10h2.5l1.5-3 2 6 1.5-3H16" /></svg>
+          </span>
+          Cardiology
+        </button>
+        <button class="ap-dept" data-dept="Pediatrics" data-code="PED">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-3.9 3.6-7 8-7s8 3.1 8 7" /></svg>
+          </span>
+          Pediatrics
+        </button>
+        <button class="ap-dept" data-dept="Orthopedics" data-code="ORTH">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6M9 3l3 3-3 3-3-3 3-3zM18 12l3 3-3 3-3-3 3-3z" /></svg>
+          </span>
+          Orthopedics
+        </button>
+        <button class="ap-dept" data-dept="Dermatology" data-code="DERM">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><circle cx="9" cy="10" r="1" /><circle cx="15" cy="9" r="1" /><circle cx="13" cy="15" r="1" /></svg>
+          </span>
+          Dermatology
+        </button>
+        <button class="ap-dept" data-dept="AYUSH / Wellness" data-code="AYUSH">
+          <span class="ap-dept-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-5-8-12a8 8 0 0 1 16 0c0 7-8 12-8 12z" /><path d="M12 6v8M8 10h8" /></svg>
+          </span>
+          AYUSH / Wellness
+        </button>
+      </div>
+
+      <div class="ap-actions">
+        <span></span>
+        <button class="ap-btn ap-btn--primary" id="toStep2" disabled>Continue →</button>
+      </div>
+    </section>
+
+    <!-- ===== Step 2: Date & Time ===== -->
+    <section class="ap-panel" id="panel-2">
+      <h2 class="ap-panel-title">Choose a date and time</h2>
+      <p class="ap-panel-hint">Slots update live. Greyed-out times are already booked.</p>
+
+      <label class="ap-field-label" for="apDate">Preferred date</label>
+      <input type="date" id="apDate" class="ap-date-input" />
+
+      <div class="ap-slot-grid" id="slotGrid"></div>
+
+      <div class="ap-actions">
+        <button class="ap-btn ap-btn--ghost" id="backTo1">← Back</button>
+        <button class="ap-btn ap-btn--primary" id="toStep3" disabled>Continue →</button>
+      </div>
+    </section>
+
+    <!-- ===== Step 3: Patient Details ===== -->
+    <section class="ap-panel" id="panel-3">
+      <h2 class="ap-panel-title">Your details</h2>
+      <p class="ap-panel-hint">Used to generate your token and confirm your identity at the kiosk.</p>
+
+      <form class="ap-form" id="apForm">
+        <div class="ap-form-row">
+          <label class="ap-field-label" for="fName">Full name</label>
+          <input type="text" id="fName" required placeholder="e.g. Priya Sharma" />
+        </div>
+        <div class="ap-form-row ap-form-row--split">
+          <div>
+            <label class="ap-field-label" for="fPhone">Phone number</label>
+            <input type="tel" id="fPhone" required placeholder="10-digit mobile number" pattern="[0-9]{10}" />
+          </div>
+          <div>
+            <label class="ap-field-label" for="fAge">Age</label>
+            <input type="number" id="fAge" required min="0" max="120" placeholder="e.g. 34" />
+          </div>
+        </div>
+        <div class="ap-form-row ap-form-row--split">
+          <div>
+            <label class="ap-field-label" for="fGender">Gender</label>
+            <select id="fGender" required>
+              <option value="" disabled selected>Select</option>
+              <option>Female</option>
+              <option>Male</option>
+              <option>Other</option>
+              <option>Prefer not to say</option>
+            </select>
+          </div>
+          <div>
+            <label class="ap-field-label" for="fAbha">ABHA ID <span class="ap-optional">(optional)</span></label>
+            <input type="text" id="fAbha" placeholder="14-digit ABHA number" />
+          </div>
+        </div>
+        <div class="ap-form-row">
+          <label class="ap-field-label" for="fReason">Reason for visit <span class="ap-optional">(optional)</span></label>
+          <textarea id="fReason" rows="3" placeholder="Briefly describe your symptoms or reason for the visit"></textarea>
+        </div>
+      </form>
+
+      <div class="ap-actions">
+        <button class="ap-btn ap-btn--ghost" id="backTo2">← Back</button>
+        <button class="ap-btn ap-btn--primary" id="toStep4">Review &amp; Confirm →</button>
+      </div>
+    </section>
+
+    <!-- ===== Step 4: Confirmation / Status ===== -->
+    <section class="ap-panel" id="panel-4">
+      <div id="statusPending">
+        <div class="ap-confirm-head">
+          <h2 class="ap-panel-title">Request Sent!</h2>
+        </div>
+        <div class="ap-status-card ap-status-card--pending">
+          <span class="ap-pending-pulse"></span>
+          <span class="ap-status-badge ap-status-badge--pending">Awaiting doctor review</span>
+          <p class="ap-panel-hint" style="margin:0;">You will receive your token here if the doctor accepts the appointment. This page checks automatically — no need to refresh.</p>
+        </div>
+      </div>
+
+      <div id="statusRejected" style="display: none;">
+        <div class="ap-confirm-head">
+          <h2 class="ap-panel-title" style="color: #e74c3c;">Requested Time Unavailable</h2>
+        </div>
+        <div class="ap-status-card ap-status-card--rejected">
+          <span class="ap-status-badge ap-status-badge--rejected">Declined</span>
+          <p class="ap-panel-hint" style="margin:0;">The doctor has declined the requested slot. Please try booking a different time.</p>
+        </div>
+        <div class="ap-actions ap-actions--center">
+          <button class="ap-btn ap-btn--primary" id="rebookBtn">Re-book Appointment</button>
+        </div>
+      </div>
+
+      <div id="statusApproved" style="display: none;">
+        <div class="ap-confirm-head">
+          <span class="ap-confirm-check">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+          </span>
+          <h2 class="ap-panel-title">Appointment Confirmed!</h2>
+          <span class="ap-status-badge ap-status-badge--approved">Approved</span>
+          <p class="ap-panel-hint" style="margin-top:10px;">Save or screenshot your token below. Please arrive 15 minutes before your slot for check-in and vitals capture.</p>
+        </div>
+
+        <div class="ap-token-card" id="tokenCard">
+          <div class="ap-token-stub">
+            <div class="ap-token-label">MediKiosk Appointment Token</div>
+            <div class="ap-token-number" id="tkNumber">—</div>
+            <div class="ap-token-grid">
+              <div>
+                <div class="ap-token-k">Patient</div>
+                <div class="ap-token-v" id="tkName">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Department</div>
+                <div class="ap-token-v" id="tkDept">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Date</div>
+                <div class="ap-token-v" id="tkDate">—</div>
+              </div>
+              <div>
+                <div class="ap-token-k">Arrival time</div>
+                <div class="ap-token-v ap-token-v--accent" id="tkTime">—</div>
+              </div>
+            </div>
+          </div>
+          <div class="ap-token-perf"></div>
+          <div class="ap-token-slip">
+            <div class="ap-token-k">Please arrive by</div>
+            <div class="ap-token-time-big" id="tkTimeBig">—</div>
+            <div class="ap-token-note">Token <span id="tkNumberSmall">—</span></div>
+          </div>
+        </div>
+
+        <div class="ap-actions ap-actions--center">
+          <button class="ap-btn ap-btn--primary" id="downloadToken">⬇ Download Token</button>
+          <button class="ap-btn ap-btn--ghost" onclick="window.print()">Print</button>
+          <button class="ap-btn ap-btn--ghost" id="bookAnother">Book another appointment</button>
+        </div>
+      </div>
+      <style>
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      </style>
+    </section>
+
+  </main>
+
+</div>
+
+<script src="appointment.js"></script>
+</body>
+</html>

@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Public Grievance Redressal — Modern Portal</title>
+  
+  <!-- Google Fonts: Inter, Rajdhani, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MOCKDOCK INTERCEPTOR
+       Zero code change: intercepts window.fetch('/api/grievances')
+       ══════════════════════════════════════════════════════════ -->
+<script src="https://mockdoc-nrko.onrender.com/interceptor/test.js"></script>
+
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    :root {
+      --bg: #f8f9fc;
+      --surface: #ffffff;
+      --card: #ffffff;
+      --primary: #4361ee;
+      --primary-dim: rgba(67, 97, 238, 0.08);
+      --success: #2ecc71;
+      --warn: #f39c12;
+      --danger: #e63946;
+      --ink: #1a1a2e;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP BAR */
+    .n-topbar {
+      background: var(--primary);
+      padding: 10px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .n-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .n-emblem {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .n-topbar-title {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .n-topbar-sub {
+      color: rgba(255,255,255,0.8);
+      font-size: 11px;
+    }
+
+    .n-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hook-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+
+    .hook-dot {
+      width: 7px;
+      height: 7px;
+      background: #2ecc71;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #2ecc71;
+    }
+
+    .n-user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 4px 12px 4px 5px;
+    }
+
+    .n-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .n-username {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* HERO */
+    .n-hero {
+      background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+      padding: 44px 32px 36px;
+      text-align: center;
+      color: #fff;
+    }
+
+    .n-hero h1 {
+      color: #fff;
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: -0.5px;
+    }
+
+    .n-hero p {
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      max-width: 620px;
+      margin: 0 auto 24px;
+    }
+
+    .n-search {
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .n-search input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 13px 18px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--ink);
+    }
+
+    .n-search button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0 24px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .n-search button:hover {
+      background: #324edb;
+    }
+
+    .n-stats {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .n-stat {
+      text-align: center;
+    }
+
+    .n-stat-val {
+      font-size: 32px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'Rajdhani', sans-serif;
+      line-height: 1;
+    }
+
+    .n-stat-lbl {
+      font-size: 11px;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* MAIN LAYOUT */
+    .n-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+      padding: 28px 32px;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1;
+    }
+
+    @media (max-width: 860px) {
+      .n-layout {
+        grid-template-columns: 1fr;
+        padding: 20px 16px;
+      }
+    }
+
+    /* SECTION TITLE & FILTERS */
+    .n-sec-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-sm {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .btn-sm:hover {
+      background: var(--primary-dim);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .btn-sm.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-sm.danger:hover {
+      background: #fde8e8;
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    /* GRIEVANCE CARDS */
+    .grievance-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+      transition: box-shadow 0.2s, transform 0.15s;
+      animation: cardIn 0.25s ease both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .grievance-card:hover {
+      box-shadow: 0 4px 16px rgba(67,97,238,0.1);
+      transform: translateY(-1px);
+    }
+
+    .gc-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .gc-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+
+    .status-pill:hover {
+      opacity: 0.85;
+    }
+
+    .sp-pending { background: #fde8e8; color: #c0392b; }
+    .sp-in_review { background: #fef5e4; color: #b7770d; }
+    .sp-resolved { background: #e8f8f0; color: #1e7e46; }
+
+    .gc-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .gc-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .gc-dept { background: #e8f4fd; color: #1e6fa8; }
+    .gc-pri-high { background: #fde8e8; color: #c0392b; font-weight: 600; }
+    .gc-pri-medium { background: #fef5e4; color: #b7770d; }
+    .gc-pri-low { background: #e8f8f0; color: #1e7e46; }
+
+    .gc-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .gc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .gc-id {
+      font-family: var(--mono);
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .gc-actions {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    /* SIDEBAR & FORMS */
+    .n-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .n-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .n-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+
+    .n-field label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .n-field input, .n-field select, .n-field textarea {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .n-field input:focus, .n-field select:focus, .n-field textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+    }
+
+    .n-field textarea {
+      height: 72px;
+      resize: vertical;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: opacity 0.15s;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .n-fb {
+      font-size: 12px;
+      font-family: var(--mono);
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .n-fb.ok { background: #e8f8f0; color: #1e7e46; display: block; }
+    .n-fb.err { background: #fde8e8; color: #c0392b; display: block; }
+
+    /* LOG PANEL */
+    .log-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      margin-bottom: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      animation: cardIn 0.15s ease;
+    }
+
+    .lm { font-weight: 600; min-width: 46px; }
+    .lm-GET { color: #3b82f6; }
+    .lm-POST { color: #2ecc71; }
+    .lm-PUT { color: #f39c12; }
+    .lm-DELETE { color: #e63946; }
+
+    .lp { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ls-ok { color: #2ecc71; font-weight: 600; }
+    .ls-err { color: #e63946; font-weight: 600; }
+    .lt { color: #94a3b8; white-space: nowrap; }
+
+    /* STATE BOX */
+    .state-box {
+      padding: 48px 20px;
+      text-align: center;
+      color: var(--muted);
+      background: #fff;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    .state-box .icon { font-size: 32px; margin-bottom: 8px; }
+    .state-box p { font-size: 13px; }
+
+    /* EDIT MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,46,0.5);
+      z-index: 500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    .modal-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-card p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--ink);
+      color: #fff;
+      font-size: 12px;
+      font-family: var(--mono);
+      padding: 10px 18px;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.2s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="n-topbar">
+    <div class="n-topbar-left">
+      <div class="n-emblem">🏛️</div>
+      <div>
+        <div class="n-topbar-title">CivicDesk — Grievance Portal</div>
+        <div class="n-topbar-sub">Public Redressal &amp; Tracking System</div>
+      </div>
+    </div>
+
+    <div class="n-topbar-right">
+      <div class="hook-badge">
+        <div class="hook-dot"></div>
+        <span>MockDock Interceptor: Active</span>
+      </div>
+
+      <div class="n-user-chip">
+        <div class="n-avatar">C</div>
+        <span class="n-username">Citizen Portal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="n-hero">
+    <h1>File Your Grievance. Track It Live.</h1>
+    <p>Real-time civic complaint management powered seamlessly by <strong>MockDock</strong> with zero code change.</p>
+    
+    <div class="n-search">
+      <input placeholder="Search by title, department, or keyword…" id="searchInp" oninput="doSearch()"/>
+      <button onclick="doSearch()">Search</button>
+    </div>
+
+    <div class="n-stats">
+      <div class="n-stat"><div class="n-stat-val" id="statTotal">0</div><div class="n-stat-lbl">Total Filed</div></div>
+      <div class="n-stat"><div class="n-stat-val" id="statPending">0</div><div class="n-stat-lbl">Pending</div></div>
+      <div class="n-stat"><div class="n-stat-val" id="statResolved">0</div><div class="n-stat-lbl">Resolved</div></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="n-layout">
+
+    <!-- Grievance List Column -->
+    <div>
+      <div class="n-sec-title">
+        <span>Active Grievances</span>
+        <div class="filter-tabs">
+          <button class="btn-sm active" data-f="all" onclick="setFilter(this,'all')">All</button>
+          <button class="btn-sm" data-f="pending" onclick="setFilter(this,'pending')">Pending</button>
+          <button class="btn-sm" data-f="in_review" onclick="setFilter(this,'in_review')">In Review</button>
+          <button class="btn-sm" data-f="resolved" onclick="setFilter(this,'resolved')">Resolved</button>
+        </div>
+      </div>
+
+      <div id="grievanceList">
+        <div class="state-box">
+          <div class="icon">⏳</div>
+          <p>Connecting to MockDock...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Column -->
+    <div>
+      <!-- File Form -->
+      <div class="n-card">
+        <div class="n-card-title">📝 File New Grievance</div>
+        
+        <div class="n-field">
+          <label>Title</label>
+          <input id="g-title" placeholder="e.g. Broken water pipe near sector 5"/>
+        </div>
+
+        <div class="n-field">
+          <label>Department</label>
+          <select id="g-dept">
+            <option value="">Select department</option>
+            <option value="PWD">PWD (Roads & Infrastructure)</option>
+            <option value="Municipal">Municipal Corporation</option>
+            <option value="Jal Nigam">Jal Nigam (Water)</option>
+            <option value="Sanitation">Sanitation & Waste</option>
+            <option value="Electricity Board">Electricity Board</option>
+          </select>
+        </div>
+
+        <div class="n-field">
+          <label>Priority</label>
+          <select id="g-priority">
+            <option value="high">High</option>
+            <option value="medium" selected>Medium</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+
+        <div class="n-field">
+          <label>Applicant Name</label>
+          <input id="g-applicant" placeholder="Citizen name"/>
+        </div>
+
+        <div class="n-field">
+          <label>Description</label>
+          <textarea id="g-desc" placeholder="Describe the issue clearly…"></textarea>
+        </div>
+
+        <button class="btn-primary" id="submitBtn" onclick="submitGrievance()">Submit Grievance →</button>
+        <div class="n-fb" id="submitFb"></div>
+      </div>
+
+      <!-- Live API Log -->
+      <div class="n-card">
+        <div class="n-sec-title" style="margin-bottom:12px">
+          <span>Live API Traffic</span>
+          <span style="font-size:10px;font-family:var(--mono);color:var(--muted)" id="logCount">0 calls</span>
+        </div>
+        <div id="logEntries">
+          <p style="font-size:11px;color:var(--muted);font-family:var(--mono)">No requests yet.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Edit Record Modal -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-card">
+      <h2>Edit Grievance</h2>
+      <p>Updates will be sent via PUT request to MockDock.</p>
+
+      <input type="hidden" id="edit-id"/>
+
+      <div class="n-field">
+        <label>Title</label>
+        <input id="edit-title"/>
+      </div>
+
+      <div class="n-field">
+        <label>Department</label>
+        <select id="edit-dept">
+          <option value="PWD">PWD</option>
+          <option value="Municipal">Municipal</option>
+          <option value="Jal Nigam">Jal Nigam</option>
+          <option value="Sanitation">Sanitation</option>
+          <option value="Electricity Board">Electricity Board</option>
+        </select>
+      </div>
+
+      <div class="n-field">
+        <label>Priority</label>
+        <select id="edit-priority">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+
+      <div class="n-field">
+        <label>Status</label>
+        <select id="edit-status">
+          <option value="pending">Pending</option>
+          <option value="in_review">In Review</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+
+      <div class="n-field">
+        <label>Description</label>
+        <textarea id="edit-desc"></textarea>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-sm" style="flex:1;padding:10px;" onclick="closeEditModal()">Cancel</button>
+        <button class="btn-primary" style="flex:1;" onclick="saveEditGrievance()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       CLIENT LOGIC
+       100% dynamic: NO hardcoded records in JavaScript.
+       All CRUD runs against fetch('/api/grievances') via MockDock.
+       ══════════════════════════════════════════════════════════ -->
+  <script>
+    // State — Zero hardcoded mock records
+    let grievances = [];
+    let activeFilter = 'all';
+    let localLogs = [];
+
+    // Load on init
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGrievances();
+    });
+
+    // ── READ (GET /api/grievances) ───────────────────────────
+    async function loadGrievances() {
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/grievances');
+        const data = await res.json();
+        const latency = Math.round(performance.now() - t0);
+        addLog('GET', '/api/grievances', res.status, latency);
+
+        if (Array.isArray(data)) {
+          grievances = data;
+        } else {
+          grievances = [];
+        }
+      } catch (err) {
+        addLog('GET', '/api/grievances', 500, Math.round(performance.now() - t0));
+        grievances = [];
+      }
+      renderList();
+      updateStats();
+    }
+
+    // ── CREATE (POST /api/grievances) ────────────────────────
+    async function submitGrievance() {
+      const title = document.getElementById('g-title').value.trim();
+      const department = document.getElementById('g-dept').value;
+      const priority = document.getElementById('g-priority').value;
+      const applicant = document.getElementById('g-applicant').value.trim() || 'Citizen';
+      const description = document.getElementById('g-desc').value.trim();
+
+      if (!title || !department) {
+        showFb('submitFb', 'Title and Department are required', 'err');
+        return;
+      }
+
+      const body = {
+        title,
+        department,
+        priority,
+        status: 'pending',
+        applicant,
+        description
+      };
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/grievances', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const created = await res.json();
+        const latency = Math.round(performance.now() - t0);
+        addLog('POST', '/api/grievances', res.status, latency);
+
+        const newId = (created && created.id) ? created.id : Date.now();
+        grievances.unshift({ ...body, id: newId });
+        
+        clearForm();
+        showFb('submitFb', `✓ Filed successfully — ID #${newId}`, 'ok');
+        toast(`Grievance #${newId} filed successfully ✓`);
+      } catch (err) {
+        addLog('POST', '/api/grievances', 500, Math.round(performance.now() - t0));
+        showFb('submitFb', 'Submission failed. Check network.', 'err');
+      }
+
+      btn.disabled = false;
+      renderList();
+      updateStats();
+    }
+
+    // ── UPDATE STATUS (PUT /api/grievances/:id) ───────────────
+    async function setStatus(id, newStatus) {
+      const g = grievances.find(x => String(x.id) === String(id));
+      if (!g) return;
+
+      const updated = { ...g, status: newStatus };
+      const t0 = performance.now();
+
+      try {
+        const res = await fetch(`/api/grievances/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+        const latency = Math.round(performance.now() - t0);
+        addLog('PUT', `/api/grievances/${id}`, res.status, latency);
+
+        g.status = newStatus;
+        toast(`Status updated: ${fmtStatus(newStatus)}`);
+      } catch (err) {
+        addLog('PUT', `/api/grievances/${id}`, 500, Math.round(performance.now() - t0));
+        toast('Status update failed');
+      }
+
+      renderList();
+      updateStats();
+    }
+
+    // ── EDIT FULL RECORD (PUT /api/grievances/:id) ───────────
+    function openEditModal(id) {
+      const g = grievances.find(x => String(x.id) === String(id));
+      if (!g) return;
+
+      document.getElementById('edit-id').value = g.id;
+      document.getElementById('edit-title').value = g.title || '';
+      document.getElementById('edit-dept').value = g.department || 'PWD';
+      document.getElementById('edit-priority').value = g.priority || 'medium';
+      document.getElementById('edit-status').value = g.status || 'pending';
+      document.getElementById('edit-desc').value = g.description || '';
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEditGrievance() {
+      const id = document.getElementById('edit-id').value;
+      const g = grievances.find(x => String(x.id) === String(id));
+      if (!g) return;
+
+      const updated = {
+        ...g,
+        title: document.getElementById('edit-title').value.trim(),
+        department: document.getElementById('edit-dept').value,
+        priority: document.getElementById('edit-priority').value,
+        status: document.getElementById('edit-status').value,
+        description: document.getElementById('edit-desc').value.trim()
+      };
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(`/api/grievances/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+        const latency = Math.round(performance.now() - t0);
+        addLog('PUT', `/api/grievances/${id}`, res.status, latency);
+
+        const idx = grievances.findIndex(x => String(x.id) === String(id));
+        if (idx !== -1) grievances[idx] = updated;
+        toast(`Grievance #${id} updated ✓`);
+      } catch (err) {
+        addLog('PUT', `/api/grievances/${id}`, 500, Math.round(performance.now() - t0));
+      }
+
+      closeEditModal();
+      renderList();
+      updateStats();
+    }
+
+    // ── DELETE (DELETE /api/grievances/:id) ───────────────────
+    async function deleteG(id) {
+      if (!confirm(`Delete grievance #${id}?`)) return;
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch(`/api/grievances/${id}`, {
+          method: 'DELETE'
+        });
+        const latency = Math.round(performance.now() - t0);
+        addLog('DELETE', `/api/grievances/${id}`, res.status, latency);
+
+        grievances = grievances.filter(x => String(x.id) !== String(id));
+        toast(`Grievance #${id} deleted ✓`);
+      } catch (err) {
+        addLog('DELETE', `/api/grievances/${id}`, 500, Math.round(performance.now() - t0));
+      }
+
+      renderList();
+      updateStats();
+    }
+
+    // ── RENDER LIST ──────────────────────────────────────────
+    function renderList() {
+      const q = document.getElementById('searchInp')?.value.toLowerCase() || '';
+      const items = grievances.filter(g => {
+        const matchF = activeFilter === 'all' || g.status === activeFilter;
+        const matchQ = !q || 
+          (g.title && g.title.toLowerCase().includes(q)) ||
+          (g.department && g.department.toLowerCase().includes(q)) ||
+          (g.description && g.description.toLowerCase().includes(q)) ||
+          (g.applicant && g.applicant.toLowerCase().includes(q));
+        return matchF && matchQ;
+      });
+
+      const container = document.getElementById('grievanceList');
+
+      if (!items.length) {
+        container.innerHTML = `
+          <div class="state-box">
+            <div class="icon">📭</div>
+            <p style="font-weight:600;margin-bottom:4px">No grievances found.</p>
+            <p style="font-size:12px;color:var(--muted)">Use the form on the right to file your first complaint.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = items.map((g, i) => `
+        <div class="grievance-card" style="animation-delay:${i * 0.04}s">
+          <div class="gc-top">
+            <div class="gc-title">${esc(g.title || 'Untitled')}</div>
+            <button class="status-pill sp-${g.status || 'pending'}" onclick="cycleStatus('${g.id}')" title="Click to advance status">
+              ${fmtStatus(g.status)}
+            </button>
+          </div>
+
+          <div class="gc-meta">
+            <span class="gc-badge gc-dept">🏢 ${esc(g.department || 'General')}</span>
+            <span class="gc-badge gc-pri-${g.priority || 'medium'}">⚡ ${(g.priority || 'medium').toUpperCase()}</span>
+          </div>
+
+          <div class="gc-desc">${esc(g.description || 'No description provided.')}</div>
+
+          <div class="gc-footer">
+            <span>👤 ${esc(g.applicant || 'Citizen')}</span>
+            <span class="gc-id">ID #${g.id}</span>
+            <div class="gc-actions">
+              <button class="btn-sm" onclick="setStatus('${g.id}','in_review')" title="Mark In Review">🔍 Review</button>
+              <button class="btn-sm" onclick="setStatus('${g.id}','resolved')" title="Mark Resolved">✅ Resolve</button>
+              <button class="btn-sm" onclick="openEditModal('${g.id}')" title="Edit">✏️ Edit</button>
+              <button class="btn-sm danger" onclick="deleteG('${g.id}')" title="Delete">🗑️</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function cycleStatus(id) {
+      const g = grievances.find(x => String(x.id) === String(id));
+      if (!g) return;
+      const order = ['pending', 'in_review', 'resolved'];
+      const nextIdx = (order.indexOf(g.status) + 1) % order.length;
+      setStatus(id, order[nextIdx]);
+    }
+
+    function fmtStatus(s) {
+      return { pending: '⏳ Pending', in_review: '🔍 In Review', resolved: '✅ Resolved' }[s] || '⏳ Pending';
+    }
+
+    function updateStats() {
+      const total = grievances.length;
+      const pending = grievances.filter(g => g.status === 'pending').length;
+      const resolved = grievances.filter(g => g.status === 'resolved').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPending').textContent = pending;
+      document.getElementById('statResolved').textContent = resolved;
+    }
+
+    function setFilter(btn, f) {
+      document.querySelectorAll('[data-f]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = f;
+      renderList();
+    }
+
+    function doSearch() {
+      renderList();
+    }
+
+    // ── HELPERS ──────────────────────────────────────────────
+    function clearForm() {
+      document.getElementById('g-title').value = '';
+      document.getElementById('g-dept').value = '';
+      document.getElementById('g-priority').value = 'medium';
+      document.getElementById('g-applicant').value = '';
+      document.getElementById('g-desc').value = '';
+    }
+
+    function showFb(id, msg, type) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.className = `n-fb ${type}`;
+      if (type === 'ok') setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function addLog(method, path, status, ms) {
+      localLogs.unshift({ method, path, status, ms });
+      if (localLogs.length > 6) localLogs.pop();
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const container = document.getElementById('logEntries');
+      document.getElementById('logCount').textContent = `${localLogs.length} calls`;
+
+      if (!localLogs.length) {
+        container.innerHTML = `<p style="font-size:11px;color:var(--muted);font-family:var(--mono)">No requests yet.</p>`;
+        return;
+      }
+
+      container.innerHTML = localLogs.map(l => `
+        <div class="log-entry">
+          <span class="lm lm-${l.method}">${l.method}</span>
+          <span class="lp">${esc(l.path)}</span>
+          <span class="${l.status >= 400 ? 'ls-err' : 'ls-ok'}">${l.status || 'ERR'}</span>
+          <span class="lt">${l.ms}ms</span>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

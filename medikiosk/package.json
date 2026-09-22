@@ -1,0 +1,48 @@
+{
+  "name": "medikiosk-backend",
+  "version": "1.0.0",
+  "description": "MediKiosk Unified Backend & Triage Engine (APIs, Data Pipeline, FHIR R4 Mapping, HPR Security, ABDM Sync)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test_runner.js",
+    "triage:demo": "tsx triage-engine/src/demo/runDemo.ts",
+    "triage:seed": "tsx triage-engine/src/demo/seedDashboard.ts"
+  },
+  "keywords": [
+    "medikiosk",
+    "triage-engine",
+    "fhir-r4",
+    "abdm",
+    "hpr-auth",
+    "express",
+    "mongodb",
+    "socket.io"
+  ],
+  "author": "MediKiosk Engineering Team",
+  "license": "ISC",
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.7.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.3.0",
+    "pdfjs-dist": "^6.3.289",
+    "sharp": "^0.35.4",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3",
+    "tesseract.js": "^7.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.5.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}

@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grievance Portal — MockDock Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet"/>
+
+<!--
+═══════════════════════════════════════════════
+MOCKDOCK SETUP — GRIEVANCE PORTAL DEMO
+═══════════════════════════════════════════════
+Create TWO resources in MockDock:
+
+RESOURCE 1:
+  name       : grievances
+  route      : /api/grievances
+  schema     : title:string, department:string,
+               status:string, priority:string,
+               description:string, applicant:string
+
+  Seed records:
+  [
+    {"title":"Road pothole near sector 4","department":"PWD","status":"pending","priority":"high","description":"Large pothole causing accidents near sector 4 main road.","applicant":"Ramesh Kumar"},
+    {"title":"Street light not working","department":"Municipal","status":"in_review","priority":"medium","description":"Street lights on MG road have been off for 2 weeks.","applicant":"Sunita Devi"},
+    {"title":"Water supply disruption","department":"Jal Nigam","status":"resolved","priority":"high","description":"No water supply in ward 12 for 3 days.","applicant":"Mohan Singh"},
+    {"title":"Garbage not collected","department":"Sanitation","status":"pending","priority":"low","description":"Garbage pickup missed for 5 days in our colony.","applicant":"Priya Sharma"}
+  ]
+
+RESOURCE 2:
+  name       : auth
+  route      : /api/auth/login
+  schema     : username:string, token:string, role:string
+  Seed:
+  [{"username":"citizen","token":"gov-token-2024","role":"citizen"}]
+
+Then paste:
+  - Script tag below (replace YOURCODE)
+  - namespace slug → CFG.ns
+  - token → CFG.token
+  - base URL → CFG.base
+═══════════════════════════════════════════════
+-->
+
+<!-- PASTE MOCKDOCK SCRIPT TAG HERE -->
+ <script src="https://mockdoc-nrko.onrender.com/interceptor/grievances.js"></script>
+  <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── TOGGLE SWITCH ── */
+.toggle-wrap{position:fixed;top:0;left:0;right:0;z-index:1000;background:#1a1a2e;padding:10px 24px;display:flex;align-items:center;justify-content:between;gap:16px;border-bottom:2px solid #e63946}
+.toggle-wrap span{font-family:'JetBrains Mono',monospace;font-size:11px;color:#aaa;letter-spacing:1px}
+.toggle-wrap span.hi{color:#4cc9f0;font-weight:500}
+.sw{position:relative;display:inline-block;width:52px;height:26px;margin:0 10px}
+.sw input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#333;border-radius:26px;cursor:pointer;transition:.3s}
+.slider::before{content:'';position:absolute;width:20px;height:20px;left:3px;bottom:3px;background:#666;border-radius:50%;transition:.3s}
+input:checked+.slider{background:#4361ee}
+input:checked+.slider::before{transform:translateX(26px);background:#fff}
+
+/* ══════════════════════════════
+   OLD GOVERNMENT SITE STYLES
+══════════════════════════════ */
+#old-site{display:block}
+#new-site{display:none}
+
+.gov-header{background:#154360;padding:0}
+.gov-topbar{background:#1a5276;padding:6px 16px;display:flex;align-items:center;gap:8px}
+.gov-topbar img{width:28px;height:28px;background:#fff;border-radius:2px;padding:2px}
+.gov-topbar-text{color:#d5d8dc;font-size:11px;font-family:Arial,sans-serif}
+.gov-titlebar{background:#154360;padding:10px 16px;display:flex;align-items:center;gap:12px;border-bottom:3px solid #f39c12}
+.gov-emblem{width:60px;height:60px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.gov-title-text h1{font-family:'Times New Roman',serif;color:#f5f5f5;font-size:20px;font-weight:bold}
+.gov-title-text p{color:#aed6f1;font-size:11px;font-family:Arial,sans-serif}
+
+.gov-nav{background:#1e8bc3;padding:0;display:flex;flex-wrap:wrap;border-bottom:2px solid #f39c12}
+.gov-nav a{color:#fff;font-size:12px;font-family:Arial,sans-serif;padding:7px 14px;text-decoration:none;border-right:1px solid rgba(255,255,255,.2);display:block}
+.gov-nav a:hover,.gov-nav a.active{background:#f39c12;color:#000}
+
+.gov-marquee{background:#fffde7;padding:5px 10px;font-size:12px;font-family:Arial,sans-serif;color:#c0392b;border-bottom:1px solid #f39c12;overflow:hidden;white-space:nowrap}
+
+.gov-body{display:grid;grid-template-columns:180px 1fr 160px;gap:0;min-height:60vh}
+.gov-sidebar{background:#d6eaf8;border-right:1px solid #aed6f1;padding:8px 0}
+.gov-sidebar h3{background:#1e8bc3;color:#fff;font-size:11px;font-family:Arial,sans-serif;padding:5px 8px;margin-bottom:4px}
+.gov-sidebar a{display:block;font-size:11px;font-family:Arial,sans-serif;color:#154360;padding:4px 10px;border-bottom:1px dotted #aed6f1;text-decoration:none}
+.gov-sidebar a:hover{background:#aed6f1}
+
+.gov-main{padding:12px;background:#fff}
+.gov-main h2{font-size:14px;font-family:Arial,sans-serif;color:#154360;border-bottom:2px solid #f39c12;padding-bottom:4px;margin-bottom:10px}
+
+.gov-form-table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}
+.gov-form-table td{padding:5px 8px;border:1px solid #d5d8dc;vertical-align:top}
+.gov-form-table td:first-child{background:#eaf2ff;width:140px;font-weight:bold;color:#154360}
+.gov-form-table input,.gov-form-table select,.gov-form-table textarea{width:100%;font-family:Arial,sans-serif;font-size:12px;border:1px solid #999;padding:3px 5px;background:#fffff0}
+.gov-form-table textarea{height:60px;resize:vertical}
+.gov-btn-row{margin-top:8px;display:flex;gap:6px}
+.gov-btn{background:#1e8bc3;color:#fff;border:none;padding:5px 16px;font-family:Arial,sans-serif;font-size:12px;cursor:pointer;border:1px solid #154360}
+.gov-btn:hover{background:#154360}
+.gov-btn-reset{background:#bdc3c7;color:#333;border:1px solid #999}
+
+.gov-table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:11px;margin-top:12px}
+.gov-table th{background:#1e8bc3;color:#fff;padding:5px 8px;text-align:left;border:1px solid #154360}
+.gov-table td{padding:4px 8px;border:1px solid #d5d8dc}
+.gov-table tr:nth-child(even){background:#eaf2ff}
+.gov-table tr:hover{background:#d4e6f1}
+
+.gov-right{background:#fef9e7;border-left:1px solid #f39c12;padding:8px}
+.gov-right h4{font-size:11px;font-family:Arial,sans-serif;color:#7d6608;background:#f9e79f;padding:4px;margin-bottom:6px;border:1px solid #f39c12}
+.gov-right p{font-size:10px;font-family:Arial,sans-serif;color:#555;margin-bottom:6px;line-height:1.4}
+.gov-right img{width:100%;border:1px solid #ccc;margin-bottom:6px}
+
+.gov-footer{background:#154360;color:#aed6f1;font-size:10px;font-family:Arial,sans-serif;padding:8px 16px;text-align:center;border-top:3px solid #f39c12}
+.gov-footer a{color:#f39c12;text-decoration:none}
+
+.captcha-box{background:#f5f5f5;border:1px solid #ccc;padding:6px;display:flex;align-items:center;gap:8px;margin:6px 0}
+.captcha-img{background:#ddd;width:100px;height:32px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:16px;letter-spacing:4px;color:#333;font-style:italic;user-select:none;border:1px solid #bbb}
+
+.status-badge-old{display:inline-block;padding:2px 6px;font-size:10px;font-family:Arial,sans-serif;font-weight:bold}
+.s-pending{background:#ffd7d7;color:#c0392b;border:1px solid #c0392b}
+.s-review{background:#fef9c3;color:#b7950b;border:1px solid #b7950b}
+.s-resolved{background:#d4efdf;color:#1e8449;border:1px solid #1e8449}
+
+/* login modal old */
+.gov-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center}
+.gov-modal{background:#fff;border:2px solid #154360;width:320px;padding:0}
+.gov-modal-hd{background:#154360;color:#fff;padding:8px 12px;font-family:Arial,sans-serif;font-size:13px;font-weight:bold;display:flex;justify-content:space-between}
+.gov-modal-body{padding:16px;font-family:Arial,sans-serif;font-size:12px}
+.gov-modal-body label{display:block;margin-bottom:2px;color:#154360;font-weight:bold}
+.gov-modal-body input{width:100%;border:1px solid #999;padding:4px 6px;margin-bottom:10px;font-size:12px;font-family:Arial,sans-serif}
+.gov-modal-body .notice{background:#fef9e7;border:1px solid #f39c12;padding:6px;font-size:10px;color:#7d6608;margin-bottom:10px}
+
+/* ══════════════════════════════
+   NEW FRIENDLY SITE STYLES
+══════════════════════════════ */
+:root{
+  --bg:#f8f9fc;--surface:#fff;--card:#fff;
+  --primary:#4361ee;--primary-dim:rgba(67,97,238,.08);
+  --success:#2ecc71;--warn:#f39c12;--danger:#e63946;
+  --ink:#1a1a2e;--muted:#64748b;--border:#e2e8f0;
+  --mono:'JetBrains Mono',monospace;
+}
+#new-site{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-top:46px}
+
+/* top bar */
+.n-topbar{background:var(--primary);padding:8px 32px;display:flex;align-items:center;justify-content:space-between}
+.n-topbar-left{display:flex;align-items:center;gap:10px}
+.n-emblem{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.n-topbar-title{color:#fff;font-size:13px;font-weight:600}
+.n-topbar-sub{color:rgba(255,255,255,.7);font-size:11px}
+.n-topbar-right{display:flex;align-items:center;gap:12px}
+.n-login-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s}
+.n-login-btn:hover{background:rgba(255,255,255,.25)}
+.n-user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px 4px 4px}
+.n-avatar{width:26px;height:26px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--primary)}
+.n-username{color:#fff;font-size:12px;font-weight:500}
+
+/* hero */
+.n-hero{background:linear-gradient(135deg,#4361ee 0%,#3a0ca3 100%);padding:48px 32px;text-align:center}
+.n-hero h1{color:#fff;font-size:clamp(24px,4vw,40px);font-weight:700;margin-bottom:8px;font-family:'Rajdhani',sans-serif;letter-spacing:-.5px}
+.n-hero p{color:rgba(255,255,255,.8);font-size:15px;margin-bottom:24px}
+.n-search{max-width:500px;margin:0 auto;display:flex;gap:0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.n-search input{flex:1;border:none;outline:none;padding:14px 18px;font-size:14px;font-family:'Inter',sans-serif;color:var(--ink)}
+.n-search button{background:var(--primary);color:#fff;border:none;padding:0 24px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.n-stats{display:flex;justify-content:center;gap:32px;margin-top:28px;flex-wrap:wrap}
+.n-stat{text-align:center}
+.n-stat-val{font-size:28px;font-weight:700;color:#fff;font-family:'Rajdhani',sans-serif}
+.n-stat-lbl{font-size:11px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase}
+
+/* layout */
+.n-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;padding:28px 32px;max-width:1200px;margin:0 auto}
+@media(max-width:860px){.n-layout{grid-template-columns:1fr}}
+
+/* section title */
+.n-sec-title{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* grievance cards */
+.grievance-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;transition:box-shadow .2s;animation:cardIn .25s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.grievance-card:hover{box-shadow:0 4px 16px rgba(67,97,238,.1)}
+.gc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.gc-title{font-size:14px;font-weight:600;color:var(--ink)}
+.gc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.gc-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.gc-dept{background:#e8f4fd;color:#1e6fa8}
+.gc-pri-high{background:#fde8e8;color:#c0392b}
+.gc-pri-med{background:#fef5e4;color:#b7770d}
+.gc-pri-low{background:#e8f8f0;color:#1e7e46}
+.status-pill{font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.sp-pending{background:#fde8e8;color:#c0392b}
+.sp-in_review{background:#fef5e4;color:#b7770d}
+.sp-resolved{background:#e8f8f0;color:#1e7e46}
+.gc-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:10px}
+.gc-footer{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted)}
+.gc-id{font-family:var(--mono);background:var(--bg);padding:2px 8px;border-radius:4px}
+.gc-actions{display:flex;gap:6px}
+.btn-sm{font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;color:var(--muted)}
+.btn-sm:hover{background:var(--primary-dim);border-color:var(--primary);color:var(--primary)}
+.btn-sm.danger:hover{background:#fde8e8;border-color:var(--danger);color:var(--danger)}
+
+/* sidebar — file grievance */
+.n-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px}
+.n-card-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.n-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.n-field label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.n-field input,.n-field select,.n-field textarea{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);outline:none;transition:border-color .2s;width:100%}
+.n-field input:focus,.n-field select:focus,.n-field textarea:focus{border-color:var(--primary)}
+.n-field textarea{height:72px;resize:vertical}
+.btn-primary{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed}
+.n-fb{font-size:12px;font-family:var(--mono);padding:8px 12px;border-radius:6px;margin-top:8px;display:none}
+.n-fb.ok{background:#e8f8f0;color:#1e7e46;display:block}
+.n-fb.err{background:#fde8e8;color:#c0392b;display:block}
+
+/* auth gate */
+.auth-gate{background:linear-gradient(135deg,var(--primary-dim),rgba(58,12,163,.05));border:1px dashed var(--primary);border-radius:12px;padding:24px;text-align:center;margin-bottom:12px}
+.auth-gate-icon{font-size:32px;margin-bottom:10px}
+.auth-gate h3{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.auth-gate p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.btn-login{background:var(--primary);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* login modal new */
+.n-modal-bg{position:fixed;inset:0;background:rgba(26,26,46,.6);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.n-modal{background:#fff;border-radius:16px;width:360px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.n-modal h2{font-size:20px;font-weight:700;margin-bottom:4px}
+.n-modal p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.n-modal .demo-hint{background:var(--primary-dim);border:1px solid rgba(67,97,238,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--primary);margin-bottom:16px;font-family:var(--mono)}
+
+/* log panel */
+.log-entry{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;background:var(--bg);border:1px solid var(--border);margin-bottom:4px;font-family:var(--mono);font-size:10px;animation:cardIn .15s ease}
+.lm{font-weight:600;min-width:46px}
+.lm-GET{color:#3b82f6}.lm-POST{color:#2ecc71}.lm-PUT{color:#f39c12}.lm-DELETE{color:#e63946}
+.lp{flex:1;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-ok{color:#2ecc71;font-weight:600}.ls-err{color:#e63946;font-weight:600}
+.lt{color:#94a3b8;white-space:nowrap}
+
+/* state boxes */
+.state-box{padding:40px 20px;text-align:center;color:var(--muted)}
+.state-box .icon{font-size:32px;margin-bottom:12px}
+.state-box p{font-size:13px}
+
+/* strip */
+.strip{position:fixed;top:36px;left:0;right:0;height:2px;z-index:999;background:linear-gradient(90deg,transparent,var(--primary),transparent);background-size:200%;animation:sh 1s infinite;display:none}
+.strip.on{display:block}
+@keyframes sh{0%{background-position:200%}100%{background-position:-200%}}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;font-size:12px;font-family:var(--mono);padding:10px 18px;border-radius:8px;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;z-index:999}
+.toast.show{opacity:1;transform:none}
+
+
+@media(max-width:600px){
+  .n-layout{padding:16px}
+  .n-hero{padding:28px 16px}
+  .n-topbar{padding:8px 16px}
+}
+
+/* admin panel */
+.admin-card{border-color:#f39c12!important;background:linear-gradient(135deg,#fffdf5,#fff)}
+.admin-legend{display:flex;flex-direction:column;gap:6px}
+.admin-legend span{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.al-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:12px}
+.al-btn.danger{border-color:#e63946}
+.admin-stats{display:flex;flex-direction:column;gap:6px}
+.admin-stat-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
+.admin-stat-row span:last-child{font-weight:700;font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<!-- TOGGLE BAR -->
+<div class="toggle-wrap" style="display:flex;align-items:center;gap:10px;padding:8px 20px">
+  <span>🏛️ OLD GOV SITE</span>
+  <label class="sw">
+    <input type="checkbox" id="siteToggle"/>
+    <span class="slider"></span>
+  </label>
+  <span class="hi">✨ NEW (MockDock powered)</span>
+  <span style="margin-left:auto;color:#666;font-size:10px">toggle to see the difference</span>
+</div>
+
+<div class="strip" id="strip"></div>
+<div class="toast" id="toast"></div>
+
+<!-- ════════════════════════════════════════
+     OLD GOVERNMENT SITE
+════════════════════════════════════════ -->
+<div id="old-site">
+
+  <!-- Login Modal (always shown first) -->
+  <div class="gov-modal-bg" id="oldLoginModal">
+    <div class="gov-modal">
+      <div class="gov-modal-hd">
+        <span>🔒 User Login — Grievance Portal</span>
+        <span style="cursor:pointer" onclick="oldLogin()">✕</span>
+      </div>
+      <div class="gov-modal-body">
+        <div class="notice">⚠ This portal is best viewed in Internet Explorer 11 at 1024×768 resolution.</div>
+        <label>Username / Aadhaar No.</label>
+        <input type="text" placeholder="Enter username" id="old-uname"/>
+        <label>Password</label>
+        <input type="password" placeholder="Enter password" id="old-pass"/>
+        <label>CAPTCHA</label>
+        <div class="captcha-box">
+          <div class="captcha-img">X4K9P</div>
+          <input type="text" placeholder="Enter above code" style="width:120px"/>
+          <button onclick="" style="font-size:10px;padding:3px 8px;border:1px solid #ccc;background:#eee;cursor:pointer">🔄</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button class="gov-btn" onclick="oldLogin()">Login →</button>
+          <button class="gov-btn gov-btn-reset" onclick="">Register</button>
+        </div>
+        <p style="font-size:10px;color:#999;margin-top:8px">Forgot Password? Call helpline: 1800-XXX-XXXX (Mon–Fri, 9AM–5PM)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="gov-header">
+    <div class="gov-topbar">
+      <div style="font-size:18px">🇮🇳</div>
+      <div class="gov-topbar-text">Government of India &nbsp;|&nbsp; Ministry of Public Grievances &nbsp;|&nbsp; <a href="#" style="color:#f39c12">Skip to Main Content</a> &nbsp;|&nbsp; <a href="#" style="color:#aed6f1">हिंदी</a></div>
+    </div>
+    <div class="gov-titlebar">
+      <div class="gov-emblem">🏛️</div>
+      <div class="gov-title-text">
+        <h1>PUBLIC GRIEVANCE REDRESSAL PORTAL</h1>
+        <p>Ministry of Public Grievances & Pensions, Government of India &nbsp;|&nbsp; लोक शिकायत निवारण पोर्टल</p>
+      </div>
+    </div>
+    <nav class="gov-nav">
+      <a href="#" class="active">Home</a>
+      <a href="#">File Grievance</a>
+      <a href="#">Track Status</a>
+      <a href="#">View All</a>
+      <a href="#">FAQ</a>
+      <a href="#">Contact Us</a>
+      <a href="#">Downloads</a>
+      <a href="#">RTI</a>
+      <a href="#">Site Map</a>
+    </nav>
+    <div class="gov-marquee">
+      📢 NEW: Online Grievance filing facility available. Last date for filing quarterly grievances: 31/03/2024. &nbsp;&nbsp; | &nbsp;&nbsp; 📢 Helpdesk timings: 10:00 AM to 5:00 PM (Monday to Friday excluding Govt. Holidays). &nbsp;&nbsp; | &nbsp;&nbsp; 📢 Portal will be under maintenance on Sunday 02:00 AM to 06:00 AM IST.
+    </div>
+  </div>
+
+  <div class="gov-body">
+    <!-- Left Sidebar -->
+    <div class="gov-sidebar">
+      <h3>QUICK LINKS</h3>
+      <a href="#">File New Grievance</a>
+      <a href="#">Track Grievance</a>
+      <a href="#">View Status</a>
+      <a href="#">Reminder/Clarification</a>
+      <a href="#">Withdrawal</a>
+      <a href="#">Appeal</a>
+      <h3 style="margin-top:8px">DEPARTMENTS</h3>
+      <a href="#">PWD</a>
+      <a href="#">Municipal Corp.</a>
+      <a href="#">Jal Nigam</a>
+      <a href="#">Sanitation</a>
+      <a href="#">Electricity Board</a>
+      <h3 style="margin-top:8px">DOWNLOADS</h3>
+      <a href="#">User Manual (PDF)</a>
+      <a href="#">Grievance Form</a>
+      <a href="#">Annual Report</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="gov-main">
+      <h2>📋 File a Public Grievance</h2>
+      <table class="gov-form-table">
+        <tr><td>Grievance Title *</td><td><input type="text" placeholder="Enter subject of grievance"/></td></tr>
+        <tr><td>Department *</td><td>
+          <select><option>--Select Department--</option><option>PWD</option><option>Municipal</option><option>Jal Nigam</option><option>Sanitation</option></select>
+        </td></tr>
+        <tr><td>Priority</td><td>
+          <select><option>Low</option><option>Medium</option><option selected>High</option></select>
+        </td></tr>
+        <tr><td>Description *</td><td><textarea placeholder="Describe your grievance in detail (minimum 100 characters)..."></textarea></td></tr>
+        <tr><td>Applicant Name *</td><td><input type="text" placeholder="Full name as per Aadhaar"/></td></tr>
+        <tr><td>Mobile No. *</td><td><input type="text" placeholder="10-digit mobile number"/></td></tr>
+        <tr><td>Upload Document</td><td><input type="file"/><br/><span style="font-size:10px;color:#999">Only PDF/JPG. Max size: 500KB</span></td></tr>
+        <tr><td>CAPTCHA *</td><td>
+          <div class="captcha-box">
+            <div class="captcha-img">7Z3MQ</div>
+            <input type="text" placeholder="Enter code" style="width:100px"/>
+          </div>
+        </td></tr>
+      </table>
+      <div class="gov-btn-row">
+        <button class="gov-btn">Submit Grievance</button>
+        <button class="gov-btn gov-btn-reset">Reset Form</button>
+        <button class="gov-btn gov-btn-reset">Preview</button>
+      </div>
+
+      <h2 style="margin-top:20px">📊 Recent Grievances</h2>
+      <table class="gov-table">
+        <thead>
+          <tr><th>Reg. No.</th><th>Subject</th><th>Department</th><th>Date Filed</th><th>Status</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>GRV/2024/001</td><td>Road pothole near sector 4</td><td>PWD</td><td>12/01/2024</td><td><span class="status-badge-old s-pending">PENDING</span></td><td><a href="#" style="font-size:11px">View</a></td></tr>
+          <tr><td>GRV/2024/002</td><td>Street light not working</td><td>Municipal</td><td>15/01/2024</td><td><span class="status-badge-old s-review">IN REVIEW</span></td><td><a href="#" style="font-size:11px">View</a></td></tr>
+          <tr><td>GRV/2024/003</td><td>Water supply disruption</td><td>Jal Nigam</td><td>18/01/2024</td><td><span class="status-badge-old s-resolved">RESOLVED</span></td><td><a href="#" style="font-size:11px">View</a></td></tr>
+          <tr><td>GRV/2024/004</td><td>Garbage not collected</td><td>Sanitation</td><td>20/01/2024</td><td><span class="status-badge-old s-pending">PENDING</span></td><td><a href="#" style="font-size:11px">View</a></td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:10px;color:#999;margin-top:6px">Showing 1-4 of 4 records. &nbsp; <a href="#" style="font-size:10px">Next &gt;</a></p>
+    </div>
+
+    <!-- Right panel -->
+    <div class="gov-right">
+      <h4>📢 NOTICE BOARD</h4>
+      <p>• Last date to file grievance for Q4: 31/03/2024</p>
+      <p>• Portal maintenance: Every Sunday 2–6 AM</p>
+      <p>• New circular on Grievance Resolution: <a href="#" style="font-size:10px;color:#1e8bc3">Download PDF</a></p>
+      <h4 style="margin-top:8px">📞 HELPDESK</h4>
+      <p>Toll Free: 1800-XXX-XXXX</p>
+      <p>Email: grievance@gov.in</p>
+      <p>Timings: 10AM–5PM<br/>(Mon–Fri)</p>
+      <h4 style="margin-top:8px">🔗 USEFUL LINKS</h4>
+      <p><a href="#" style="font-size:10px;color:#1e8bc3">CPGRAMS</a></p>
+      <p><a href="#" style="font-size:10px;color:#1e8bc3">RTI Online</a></p>
+      <p><a href="#" style="font-size:10px;color:#1e8bc3">MyGov</a></p>
+    </div>
+  </div>
+
+  <div class="gov-footer">
+    Content on this website is published and managed by Ministry of Public Grievances. For any query regarding this website, please contact <a href="#">webmaster@gov.in</a><br/>
+    Last Updated: 20/01/2024 &nbsp;|&nbsp; Visitors: 00284719 &nbsp;|&nbsp;
+    <a href="#">Disclaimer</a> | <a href="#">Privacy Policy</a> | <a href="#">Accessibility Statement</a> | <a href="#">Screen Reader Access</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     NEW MOCKDOCK-POWERED SITE
+════════════════════════════════════════ -->
+<div id="new-site">
+
+  <!-- Citizen Login Modal -->
+  <div class="n-modal-bg" id="newLoginModal" style="display:none">
+    <div class="n-modal">
+      <h2>👤 Citizen Login</h2>
+      <p>Sign in to file and track your grievances</p>
+      <div class="demo-hint">Any username + any password works for demo</div>
+      <div class="n-field"><label>Username</label><input id="n-uname" placeholder="e.g. ramesh_kumar"/></div>
+      <div class="n-field"><label>Password</label><input type="password" id="n-pass" placeholder="••••••••"/></div>
+      <button class="btn-primary" id="loginBtn" style="margin-bottom:10px">Sign In →</button>
+      <div class="n-fb" id="loginFb"></div>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div class="n-modal-bg" id="adminLoginModal" style="display:none">
+    <div class="n-modal" style="border-top:4px solid #f39c12">
+      <h2>🔑 Admin Login</h2>
+      <p style="color:var(--muted);font-size:13px">Government Officer Portal — Restricted Access</p>
+      <div class="demo-hint" style="background:#fff8e7;border-color:#f39c12;color:#7d6608">Credentials: <b>admin</b> / <b>admin123</b></div>
+      <div class="n-field"><label>Admin Username</label><input id="a-uname" placeholder="admin"/></div>
+      <div class="n-field"><label>Password</label><input type="password" id="a-pass" placeholder="••••••••"/></div>
+      <button class="btn-primary" id="adminLoginBtn" style="margin-bottom:10px;background:#f39c12;color:#000">Access Admin Panel →</button>
+      <div class="n-fb" id="adminLoginFb"></div>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">⚠️ Unauthorised access is prohibited</p>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="n-topbar">
+    <div class="n-topbar-left">
+      <div class="n-emblem">🏛️</div>
+      <div>
+        <div class="n-topbar-title">Grievance Portal</div>
+        <div class="n-topbar-sub">Government of India — Public Redressal System</div>
+      </div>
+    </div>
+    <div class="n-topbar-right" style="gap:8px">
+      <div id="n-auth-area" style="display:flex;align-items:center;gap:8px">
+        <button class="n-login-btn" onclick="showLogin()">Sign In</button>
+        <button class="n-login-btn" onclick="showAdminLogin()" style="background:rgba(243,156,18,.25);border-color:rgba(243,156,18,.6)">🔑 Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="n-hero">
+    <h1>File Your Grievance. Track It Live.</h1>
+    <p>Simple, fast, and transparent — no more confusing forms or dead-end phone calls.</p>
+    <div class="n-search">
+      <input placeholder="Search by grievance ID or keyword…" id="searchInp"/>
+      <button onclick="doSearch()">Search</button>
+    </div>
+    <div class="n-stats">
+      <div class="n-stat"><div class="n-stat-val" id="statTotal">—</div><div class="n-stat-lbl">Total Filed</div></div>
+      <div class="n-stat"><div class="n-stat-val" id="statPending">—</div><div class="n-stat-lbl">Pending</div></div>
+      <div class="n-stat"><div class="n-stat-val" id="statResolved">—</div><div class="n-stat-lbl">Resolved</div></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="n-layout">
+
+    <!-- Grievance List -->
+    <div>
+      <div class="n-sec-title">
+        <span>Active Grievances</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm active" data-f="all" onclick="setFilter(this,'all')">All</button>
+          <button class="btn-sm" data-f="pending" onclick="setFilter(this,'pending')">Pending</button>
+          <button class="btn-sm" data-f="in_review" onclick="setFilter(this,'in_review')">In Review</button>
+          <button class="btn-sm" data-f="resolved" onclick="setFilter(this,'resolved')">Resolved</button>
+        </div>
+      </div>
+      <div id="grievanceList">
+        <div class="state-box"><div class="icon">⏳</div><p>Loading grievances…</p></div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <!-- Auth gate / File form -->
+      <div id="authGate" class="auth-gate">
+        <div class="auth-gate-icon">🔐</div>
+        <h3>Sign in to File a Grievance</h3>
+        <p>Create an account or sign in to submit and track your complaints.</p>
+        <button class="btn-login" onclick="showLogin()">Sign In / Register</button>
+      </div>
+
+      <div id="fileForm" style="display:none">
+        <div class="n-card">
+          <div class="n-card-title">📝 File New Grievance</div>
+          <div class="n-field"><label>Title</label><input id="g-title" placeholder="e.g. Road pothole near market"/></div>
+          <div class="n-field"><label>Department</label>
+            <select id="g-dept">
+              <option value="">Select department</option>
+              <option>PWD</option><option>Municipal</option><option>Jal Nigam</option><option>Sanitation</option><option>Electricity Board</option>
+            </select>
+          </div>
+          <div class="n-field"><label>Priority</label>
+            <select id="g-priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+          </div>
+          <div class="n-field"><label>Description</label><textarea id="g-desc" placeholder="Describe the issue clearly…"></textarea></div>
+          <button class="btn-primary" id="submitBtn">Submit Grievance →</button>
+          <div class="n-fb" id="submitFb"></div>
+        </div>
+      </div>
+
+      <!-- Admin Panel -->
+      <div id="adminPanel" style="display:none">
+        <div class="n-card admin-card">
+          <div class="n-card-title">🔑 Admin Controls</div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Click actions on each grievance card to update status or delete.</p>
+          <div class="admin-legend">
+            <span><span class="al-btn">🔍</span> Mark In Review</span>
+            <span><span class="al-btn">✅</span> Resolve</span>
+            <span><span class="al-btn danger">🗑️</span> Delete</span>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Quick Stats</div>
+            <div class="admin-stats">
+              <div class="admin-stat-row"><span>Total</span><span id="aStatTotal">—</span></div>
+              <div class="admin-stat-row"><span>Pending</span><span id="aStatPending" style="color:#e63946">—</span></div>
+              <div class="admin-stat-row"><span>In Review</span><span id="aStatReview" style="color:#f39c12">—</span></div>
+              <div class="admin-stat-row"><span>Resolved</span><span id="aStatResolved" style="color:#2ecc71">—</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="n-card">
+        <div class="n-sec-title" style="margin-bottom:12px">
+          <span>API Log</span>
+          <span style="font-size:10px;font-family:var(--mono);color:var(--muted)" id="logSrc">local</span>
+        </div>
+        <div id="logEntries"><p style="font-size:11px;color:var(--muted);font-family:var(--mono)">No requests yet.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const CFG = {
+  base:  "https://mockdoc-nrko.onrender.com",  // e.g. https://mockdoc-1.onrender.com
+  ns:    "grievances",                    // namespace slug
+   token: "25acb5c10052c137828c85e4ba77702b"         // ownership token
+};
+// mock auth token (what your /api/auth/login returns)
+const MOCK_AUTH_TOKEN = "gov-token-2024";
+
+
+// ── STATE ─────────────────────────────────
+let grievances = [];
+let activeFilter = "all";
+let isLoggedIn = false;
+let isAdmin = false;
+let currentUser = "";
+let localLogs = [];
+let logTimer = null;
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "admin123";
+
+// ── SITE TOGGLE ───────────────────────────
+function applySiteToggle(checked) {
+  document.getElementById("old-site").style.display = checked ? "none" : "block";
+  document.getElementById("new-site").style.display = checked ? "block" : "none";
+  document.getElementById("siteToggle").checked = checked;
+  if (checked) loadGrievances();
+}
+// Restore toggle state on load
+const _savedToggle = sessionStorage.getItem("siteToggle") === "true";
+if (_savedToggle) applySiteToggle(true);
+
+document.getElementById("siteToggle").addEventListener("change", function(){
+  sessionStorage.setItem("siteToggle", this.checked);
+  applySiteToggle(this.checked);
+});
+
+// ── XHR (bypasses interceptor for writes) ─
+function xhr(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const r = new XMLHttpRequest();
+    r.open(method, CFG.base + path, true);
+    r.setRequestHeader("Content-Type","application/json");
+    r.setRequestHeader("Authorization","Bearer " + CFG.token);
+    r.onload = () => {
+      let d=null; try{d=JSON.parse(r.responseText)}catch(e){}
+      resolve({status:r.status,data:d});
+    };
+    r.onerror = () => reject(new Error("Network error"));
+    r.send(body ? JSON.stringify(body) : null);
+  });
+}
+
+async function api(method, path, body) {
+  setStrip(true);
+  const t0 = Date.now();
+  let res;
+  try {
+    if (method === "GET") {
+      // GET uses window.fetch → interceptor demos its magic
+      const r = await fetch(path);
+      res = {status:r.status, data: await r.json().catch(()=>null)};
+    } else {
+      // writes go direct via XHR with auth token
+      res = await xhr(method, "/" + CFG.ns + path.replace("/api","") , body);
+    }
+  } catch(e) { res = {status:0, data:{error:e.message}}; }
+  setStrip(false);
+  addLog(method, path, res.status, Date.now()-t0);
+  return {...res, ok: res.status>=200 && res.status<300};
+}
+
+// ── AUTH ──────────────────────────────────
+function showLogin()      { document.getElementById("newLoginModal").style.display="flex"; }
+function hideLogin()      { document.getElementById("newLoginModal").style.display="none"; }
+function showAdminLogin() { document.getElementById("adminLoginModal").style.display="flex"; }
+function hideAdminLogin() { document.getElementById("adminLoginModal").style.display="none"; }
+
+// Citizen login
+document.getElementById("loginBtn").addEventListener("click", () => {
+  const uname = document.getElementById("n-uname").value.trim();
+  if (!uname) { showFb("loginFb","Enter a username","err"); return; }
+  hideLogin();
+  doLogin(uname, false);
+});
+
+// Admin login
+document.getElementById("adminLoginBtn").addEventListener("click", () => {
+  const uname = document.getElementById("a-uname").value.trim();
+  const pass  = document.getElementById("a-pass").value.trim();
+  if (!uname) { showFb("adminLoginFb","Enter username","err"); return; }
+  if (uname !== ADMIN_USER || pass !== ADMIN_PASS) { showFb("adminLoginFb","Wrong credentials","err"); return; }
+  hideAdminLogin();
+  doLogin(uname, true);
+});
+
+function doLogin(uname, admin) {
+  isLoggedIn = true; isAdmin = admin; currentUser = uname;
+  sessionStorage.setItem("loggedInUser", uname);
+  sessionStorage.setItem("isAdmin", admin ? "1" : "");
+  addLog("POST", "/api/auth/login", 200, 42);
+  // Update topbar
+  const adminBadge = admin ? `<span style="background:#f39c12;color:#000;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;margin-right:4px">ADMIN</span>` : "";
+  const avatarStyle = admin ? "background:#f39c12;color:#000" : "";
+  document.getElementById("n-auth-area").innerHTML = `
+    <div class="n-user-chip">
+      <div class="n-avatar" style="${avatarStyle}">${uname[0].toUpperCase()}</div>
+      ${adminBadge}
+      <span class="n-username">${esc(uname)}</span>
+      <button onclick="doLogout()" style="background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;margin-left:6px;font-family:inherit">Logout</button>
+    </div>`;
+  // Show correct sidebar panel
+  document.getElementById("authGate").style.display  = "none";
+  document.getElementById("fileForm").style.display   = admin ? "none"  : "block";
+  document.getElementById("adminPanel").style.display = admin ? "block" : "none";
+  toast((admin ? "🔑 Admin" : "👤 Citizen") + " — signed in as " + uname);
+  renderList();
+}
+
+function doLogout() {
+  isLoggedIn = false; isAdmin = false; currentUser = "";
+  sessionStorage.removeItem("loggedInUser");
+  sessionStorage.removeItem("isAdmin");
+  document.getElementById("n-auth-area").innerHTML = `
+    <button class="n-login-btn" onclick="showLogin()">Sign In</button>
+    <button class="n-login-btn" onclick="showAdminLogin()" style="background:rgba(243,156,18,.25);border-color:rgba(243,156,18,.6)">🔑 Admin</button>`;
+  document.getElementById("authGate").style.display  = "";
+  document.getElementById("fileForm").style.display   = "none";
+  document.getElementById("adminPanel").style.display = "none";
+  toast("Signed out ✓");
+  renderList();
+}
+
+// Restore session on refresh
+const _savedUser  = sessionStorage.getItem("loggedInUser");
+const _savedAdmin = sessionStorage.getItem("isAdmin") === "1";
+if (_savedUser) setTimeout(() => doLogin(_savedUser, _savedAdmin), 0);
+
+// ── LOAD GRIEVANCES ───────────────────────
+async function loadGrievances() {
+  const {ok, data} = await api("GET", "/api/grievances");
+  if (ok && Array.isArray(data)) {
+    grievances = data;
+    renderList(); updateStats();
+    startLogPoll();
+  } else {
+    document.getElementById("grievanceList").innerHTML =
+      `<div class="state-box"><div class="icon">⚠️</div><p>Could not load. Check MockDock config.</p></div>`;
+  }
+}
+
+// ── RENDER ────────────────────────────────
+function renderList() {
+  const q = document.getElementById("searchInp")?.value.toLowerCase() || "";
+  const items = grievances.filter(g => {
+    const matchF = activeFilter === "all" || g.status === activeFilter;
+    const matchQ = !q || g.title?.toLowerCase().includes(q) || g.description?.toLowerCase().includes(q);
+    return matchF && matchQ;
+  });
+  if (!items.length) {
+    document.getElementById("grievanceList").innerHTML =
+      `<div class="state-box"><div class="icon">📭</div><p>No grievances found.</p></div>`;
+    return;
+  }
+  document.getElementById("grievanceList").innerHTML = items.map((g,i) => `
+    <div class="grievance-card" style="animation-delay:${i*.05}s">
+      <div class="gc-top">
+        <div class="gc-title">${esc(g.title||"—")}</div>
+        <span class="status-pill sp-${g.status||'pending'}">${fmtStatus(g.status)}</span>
+      </div>
+      <div class="gc-meta">
+        <span class="gc-badge gc-dept">🏢 ${esc(g.department||"—")}</span>
+        <span class="gc-badge gc-pri-${g.priority||'low'}">⚡ ${(g.priority||"low").toUpperCase()}</span>
+      </div>
+      <div class="gc-desc">${esc(g.description||"")}</div>
+      <div class="gc-footer">
+        <span>👤 ${esc(g.applicant||"—")}</span>
+        <span class="gc-id">ID-${g.id}</span>
+        ${isAdmin ? `<div class="gc-actions">
+          <button class="btn-sm" onclick="setStatus(${g.id},'in_review')" title="Mark In Review">🔍</button>
+          <button class="btn-sm" onclick="setStatus(${g.id},'resolved')" title="Resolve">✅</button>
+          <button class="btn-sm danger" onclick="deleteG(${g.id})" title="Delete">🗑️</button>
+        </div>` : (isLoggedIn && g.applicant===currentUser ? `<div class="gc-actions">
+          <button class="btn-sm danger" onclick="deleteG(${g.id})" title="Withdraw">✕</button>
+        </div>` : "")}
+      </div>
+    </div>`).join("");
+}
+
+function updateStats() {
+  const total = grievances.length;
+  const pending = grievances.filter(g=>g.status==="pending").length;
+  const review = grievances.filter(g=>g.status==="in_review").length;
+  const resolved = grievances.filter(g=>g.status==="resolved").length;
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statPending").textContent = pending;
+  document.getElementById("statResolved").textContent = resolved;
+  // admin panel stats
+  const aT=document.getElementById("aStatTotal"); if(aT) aT.textContent=total;
+  const aP=document.getElementById("aStatPending"); if(aP) aP.textContent=pending;
+  const aR=document.getElementById("aStatReview"); if(aR) aR.textContent=review;
+  const aRe=document.getElementById("aStatResolved"); if(aRe) aRe.textContent=resolved;
+}
+
+function fmtStatus(s) {
+  return {pending:"⏳ Pending", in_review:"🔍 In Review", resolved:"✅ Resolved"}[s] || s;
+}
+
+function setFilter(btn, f) {
+  document.querySelectorAll("[data-f]").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active"); activeFilter = f; renderList();
+}
+
+function doSearch() { renderList(); }
+
+// ── SUBMIT GRIEVANCE ──────────────────────
+document.getElementById("submitBtn")?.addEventListener("click", async () => {
+  const body = {
+    title:       document.getElementById("g-title").value.trim(),
+    department:  document.getElementById("g-dept").value,
+    priority:    document.getElementById("g-priority").value,
+    description: document.getElementById("g-desc").value.trim(),
+    applicant:   currentUser,
+    status:      "pending"
+  };
+  if (!body.title || !body.department) {
+    showFb("submitFb","Title and Department required","err"); return;
+  }
+  document.getElementById("submitBtn").disabled = true;
+  const {ok,status,data} = await api("POST","/api/grievances",body);
+  document.getElementById("submitBtn").disabled = false;
+  if (ok) {
+    showFb("submitFb",`✓ Filed — ID ${data.id??"?"}. We'll respond within 7 days.`,"ok");
+    clearForm(); await loadGrievances();
+    toast("Grievance filed successfully ✓");
+  } else {
+    showFb("submitFb",`Failed — ${status}: ${errMsg(data)}`,"err");
+  }
+});
+
+// ── SET STATUS (admin) ────────────────────
+async function setStatus(id, status) {
+  const g = grievances.find(x=>x.id===id); if(!g) return;
+  const labels = {in_review:"Marked In Review 🔍", resolved:"Resolved ✅"};
+  const {title,department,priority,description,applicant} = g;
+  const {ok} = await api("PUT","/api/grievances/"+id,{title,department,priority,description,applicant,status});
+  if (ok) { toast(labels[status]||"Updated"); await loadGrievances(); }
+  else toast("Failed to update");
+}
+
+// ── DELETE ────────────────────────────────
+async function deleteG(id) {
+  if (!confirm("Delete this grievance permanently?")) return;
+  const {ok} = await api("DELETE","/api/grievances/"+id);
+  if (ok) { toast("Deleted ✓"); await loadGrievances(); }
+  else toast("Delete failed");
+}
+
+// ── HELPERS ───────────────────────────────
+function clearForm() {
+  ["g-title","g-desc"].forEach(id=>{const el=document.getElementById(id);if(el)el.value=""});
+  const d=document.getElementById("g-dept"); if(d) d.value="";
+}
+function showFb(id,msg,type) {
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=msg; el.className=`n-fb ${type}`; el.style.display="block";
+  if(type==="ok") setTimeout(()=>{el.style.display="none"},5000);
+}
+function errMsg(d){return d?.error||d?.message||"unknown error"}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function setStrip(on){document.getElementById("strip").classList.toggle("on",on)}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),2800)}
+
+// ── LOG ───────────────────────────────────
+function addLog(method,path,status,ms) {
+  localLogs.unshift({method,path,status,ms});
+  if(localLogs.length>8) localLogs.pop();
+  renderLogs(localLogs);
+}
+async function fetchServerLogs() {
+  try {
+    const r = await fetch(`${CFG.base}/${CFG.ns}/logs`);
+    if(!r.ok) return;
+    const data = await r.json();
+    if(!Array.isArray(data)||!data.length) return;
+    document.getElementById("logSrc").textContent="server";
+    renderLogs(data.slice(0,8).map(l=>({method:l.method,path:l.route,status:l.status_code,ms:l.response_time_ms})));
+  } catch(e){}
+}
+function startLogPoll(){
+  if(logTimer) clearInterval(logTimer);
+  fetchServerLogs();
+  logTimer=setInterval(fetchServerLogs,5000);
+}
+function renderLogs(logs) {
+  document.getElementById("logEntries").innerHTML = logs.map(l=>`
+    <div class="log-entry">
+      <span class="lm lm-${l.method}">${l.method}</span>
+      <span class="lp">${esc(l.path)}</span>
+      <span class="${l.status>=400?"ls-err":"ls-ok"}">${l.status||"ERR"}</span>
+      <span class="lt">${l.ms}ms</span>
+    </div>`).join("");
+}
+
+// ── OLD SITE LOGIN (fake) ─────────────────
+function oldLogin(){document.getElementById("oldLoginModal").style.display="none"}
+</script>
+</body>
+</html>

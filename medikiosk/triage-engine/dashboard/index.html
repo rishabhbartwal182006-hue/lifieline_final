@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>MediKiosk — Doctor Command Center</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="/dashboard/styles.css" />
+</head>
+
+<body>
+
+  <!-- =========================================================
+       APP SHELL
+  ========================================================== -->
+
+  <div class="app-shell">
+
+    <!-- =======================================================
+         SIDEBAR
+    ======================================================== -->
+
+    <aside class="sidebar">
+
+      <div class="sidebar-brand">
+        <div class="brand-mark">+</div>
+
+        <div class="brand-copy">
+          <strong>MediKiosk</strong>
+          <span>DOCTOR COMMAND CENTER</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <nav class="sidebar-nav" aria-label="Primary navigation">
+
+        <button
+          class="nav-item active"
+          data-nav="queue"
+          type="button"
+        >
+          <span class="nav-icon">▣</span>
+          <span class="nav-label">Live Queue</span>
+          <span class="nav-count" id="nav-queue-count">0</span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-nav="emergency"
+          type="button"
+        >
+          <span class="nav-icon">△</span>
+          <span class="nav-label">Critical Alerts</span>
+          <span
+            class="nav-count nav-count-danger"
+            id="nav-emergency-count"
+          >
+            0
+          </span>
+        </button>
+
+        <button
+          class="nav-item"
+          data-nav="audit"
+          type="button"
+        >
+          <span class="nav-icon">▤</span>
+          <span class="nav-label">Audit Trail</span>
+        </button>
+
+        <button
+          class="nav-item"
+          id="nav-appointments-btn"
+          type="button"
+          onclick="window.location.href='/dashboard/appointments.html'"
+          style="border: 1px solid rgba(59, 130, 246, 0.4); margin-top: 12px; background: rgba(59, 130, 246, 0.1);"
+        >
+          <span class="nav-icon" style="color: #3b82f6;">📅</span>
+          <span class="nav-label" style="color: #3b82f6; font-weight: 600;">Appointments</span>
+          <span class="nav-count" id="nav-appointments-count" style="background:#ef4444;color:#fff;">0</span>
+        </button>
+
+        <button
+          class="nav-item"
+          id="nav-remote-btn"
+          type="button"
+          onclick="window.open('/home-patient', '_blank')"
+          style="border: 1px solid rgba(13, 148, 136, 0.4); margin-top: 12px; background: rgba(13, 148, 136, 0.1);"
+        >
+          <span class="nav-icon" style="color: #0d9488;">⌂</span>
+          <span class="nav-label" style="color: #0d9488; font-weight: 600;">Home Care Station</span>
+          <span class="nav-count" style="background:#0d9488;color:#fff;">Node 2</span>
+        </button>
+        <script>
+          async function updateApptBadge() {
+            try {
+              const res = await fetch('/api/appointments/doctor');
+              const data = await res.json();
+              const pendingCount = (Array.isArray(data) ? data : []).filter(d => d.status === 'pending').length;
+              const badge = document.getElementById('nav-appointments-count');
+              if (badge) {
+                badge.textContent = pendingCount;
+                badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+              }
+            } catch(e) {}
+          }
+          updateApptBadge();
+          setInterval(updateApptBadge, 3000);
+          if (window.io) {
+            try {
+              const sock = window.io();
+              sock.on('appointment:new', updateApptBadge);
+              sock.on('appointment:updated', updateApptBadge);
+            } catch(e) {}
+          }
+        </script>
+
+      </nav>
+
+      <div class="sidebar-bottom">
+
+        <div class="connection-state">
+          <span class="connection-dot" id="connection-dot"></span>
+
+          <div>
+            <strong id="connection-label">
+              Connecting
+            </strong>
+
+            <span>
+              Real-time triage stream
+            </span>
+          </div>
+        </div>
+
+        <div class="sidebar-tech">
+          Socket.IO · HPR Lock · SOAP
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- =======================================================
+         MAIN
+    ======================================================== -->
+
+    <main class="main">
+
+      <!-- =====================================================
+           COMMAND BAR
+      ====================================================== -->
+
+      <header class="command-topbar">
+
+        <div class="command-left">
+
+          <div class="breadcrumb">
+            <span>Clinical Operations</span>
+            <b>›</b>
+            <strong>Live Queue</strong>
+          </div>
+
+          <div class="global-search">
+
+            <span class="search-symbol">⌕</span>
+
+            <input
+              id="global-search"
+              type="search"
+              placeholder="Search patient or encounter..."
+              autocomplete="off"
+            />
+
+            <kbd>/</kbd>
+
+          </div>
+
+        </div>
+
+        <div class="doctor-tools">
+
+          <button
+            class="notification-button"
+            id="notification-button"
+            type="button"
+            aria-label="Critical alerts"
+          >
+            ♧
+            <span
+              class="notification-dot hidden"
+              id="notification-dot"
+            ></span>
+          </button>
+
+          <div class="doctor-profile">
+
+            <div class="doctor-avatar">
+              RS
+            </div>
+
+            <div class="doctor-profile-copy">
+              <strong>Dr. Rajesh Sharma</strong>
+              <span>Clinical Review</span>
+            </div>
+
+            <span class="doctor-chevron">⌄</span>
+
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <!-- =====================================================
+           PAGE HEADER
+      ====================================================== -->
+
+      <section class="page-header">
+
+        <div>
+          <div class="eyebrow">
+            <span></span>
+            CLINICAL OPERATIONS
+          </div>
+
+          <h1 id="greeting">
+            Good evening, Doctor
+          </h1>
+
+          <p>
+            Review incoming kiosk encounters, triage decisions and
+            physician treatment plans.
+          </p>
+        </div>
+
+        <div class="page-actions">
+
+          <div class="live-indicator">
+            <span></span>
+            Live data
+          </div>
+
+          <button
+            class="button secondary"
+            id="refresh-btn"
+            type="button"
+          >
+            ↻
+            Refresh
+          </button>
+
+          <button
+            class="button primary"
+            id="seed-btn"
+            type="button"
+          >
+            ▣
+            Load Demo Patients
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           STATS
+      ====================================================== -->
+
+      <section class="stats-grid">
+
+        <article class="stat-card">
+          <span class="stat-accent neutral"></span>
+
+          <div>
+            <strong id="stat-total">0</strong>
+            <span>Persisted sessions</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-accent urgent"></span>
+
+          <div>
+            <strong id="stat-urgent">0</strong>
+            <span>Priority review</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-accent emergency"></span>
+
+          <div>
+            <strong id="stat-emergency">0</strong>
+            <span>Immediate attention</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-accent routine"></span>
+
+          <div>
+            <strong id="stat-routine">0</strong>
+            <span>Standard queue</span>
+          </div>
+        </article>
+
+      </section>
+
+
+      <!-- =====================================================
+           WORKSPACE
+      ====================================================== -->
+
+      <section class="workspace">
+
+        <!-- ===================================================
+             LEFT QUEUE
+        ==================================================== -->
+
+        <aside class="queue-panel">
+
+          <div class="queue-header">
+
+            <div>
+              <h2 id="queue-title">
+                Encounter Queue
+              </h2>
+
+              <p id="queue-subtitle">
+                0 patients
+              </p>
+            </div>
+
+            <div class="queue-live">
+              <span></span>
+              LIVE
+            </div>
+
+          </div>
+
+
+          <div class="queue-filters">
+
+            <button
+              class="filter-button active"
+              data-filter="all"
+              type="button"
+            >
+              All
+            </button>
+
+            <button
+              class="filter-button"
+              data-filter="emergency"
+              type="button"
+            >
+              Emergency
+            </button>
+
+            <button
+              class="filter-button"
+              data-filter="urgent"
+              type="button"
+            >
+              Urgent
+            </button>
+
+            <button
+              class="filter-button"
+              data-filter="routine"
+              type="button"
+            >
+              Routine
+            </button>
+
+          </div>
+
+
+          <div
+            class="queue-list"
+            id="queue"
+          ></div>
+
+        </aside>
+
+
+        <!-- ===================================================
+             ENCOUNTER WORKSTATION
+        ==================================================== -->
+
+        <section
+          class="encounter-panel"
+          id="patient-panel"
+        >
+
+          <!-- Empty state is rendered by app.js -->
+
+        </section>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- =========================================================
+       EMERGENCY MODAL
+  ========================================================== -->
+
+  <div
+    class="modal-backdrop hidden"
+    id="alert-modal"
+  >
+
+    <div
+      class="alert-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+
+      <div class="modal-icon">
+        !
+      </div>
+
+      <div class="modal-content">
+
+        <div class="modal-eyebrow">
+          IMMEDIATE ATTENTION
+        </div>
+
+        <h2 id="modal-title">
+          Emergency encounter
+        </h2>
+
+        <p id="modal-reason"></p>
+
+        <div
+          class="modal-rules"
+          id="modal-rules"
+        ></div>
+
+        <div
+          class="modal-meta"
+          id="modal-meta"
+        ></div>
+
+        <div class="modal-actions">
+
+          <button
+            class="button secondary"
+            id="modal-close"
+            type="button"
+          >
+            Close
+          </button>
+
+          <button
+            class="button danger"
+            id="modal-review"
+            type="button"
+          >
+            Review Encounter
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
+       TOAST
+  ========================================================== -->
+
+  <div
+    class="toast hidden"
+    id="toast"
+  ></div>
+
+
+  <!-- =========================================================
+       SOCKET.IO
+  ========================================================== -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- =========================================================
+       DASHBOARD LOGIC
+  ========================================================== -->
+
+  <script src="/dashboard/app.js"></script>
+
+</body>
+</html>

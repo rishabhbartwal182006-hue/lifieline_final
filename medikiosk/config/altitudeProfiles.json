@@ -1,0 +1,45 @@
+{
+  "_disclaimer": "Glucose altitude-caution band begins above 2500 m. Readings at or below that altitude use standard thresholds only.",
+  "bands": {
+    "sea_level": {
+      "key": "sea_level",
+      "minMeters": 0,
+      "maxMeters": 500,
+      "label": "Sea level (0–500 m)",
+      "spo2Expected": [95, 100],
+      "hrDelta": [0, 5]
+    },
+    "moderate": {
+      "key": "moderate",
+      "minMeters": 500,
+      "maxMeters": 1500,
+      "label": "Moderate (500–1500 m)",
+      "spo2Expected": [94, 99],
+      "hrDelta": [2, 10]
+    },
+    "high": {
+      "key": "high",
+      "minMeters": 1500,
+      "maxMeters": 2500,
+      "label": "High (1500–2500 m)",
+      "spo2Expected": [92, 97],
+      "hrDelta": [5, 15]
+    },
+    "very_high": {
+      "key": "very_high",
+      "minMeters": 2500,
+      "maxMeters": 3500,
+      "label": "Very high (2500–3500 m)",
+      "spo2Expected": [90, 95],
+      "hrDelta": [10, 20]
+    },
+    "extreme": {
+      "key": "extreme",
+      "minMeters": 3500,
+      "maxMeters": 6000,
+      "label": "Extreme (3500–6000 m)",
+      "spo2Expected": [85, 92],
+      "hrDelta": [15, 30]
+    }
+  }
+}

@@ -1,0 +1,4 @@
+[
+  { "name": "sea-level-severe-hypoxemia", "environment": { "altitudeMeters": 0, "altitudeSource": "facility_config" }, "vitals": [{ "type": "spo2", "value": 88, "unit": "%" }], "symptoms": [] },
+  { "name": "high-altitude-hypoxemia", "environment": { "altitudeMeters": 2600, "altitudeFeet": 8530, "altitudeSource": "facility_config" }, "vitals": [{ "type": "spo2", "value": 88, "unit": "%" }, { "type": "bp_systolic", "value": 120, "unit": "mmHg" }, { "type": "bp_diastolic", "value": 80, "unit": "mmHg" }, { "type": "blood_glucose", "value": 110, "unit": "mg/dL" }], "symptoms": ["chest tightness"] }
+]

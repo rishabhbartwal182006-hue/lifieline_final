@@ -1,0 +1,249 @@
+{
+  "intakeId": "INTAKE-2026-0902-8841",
+  "abhaId": "ABHA-91-8273-4651-0982",
+  "patientDemographics": {
+    "fullName": "Ramesh Chandra Sharma",
+    "gender": "M",
+    "age": 54,
+    "dob": "1972-04-15",
+    "phone": "+91-9876543210",
+    "address": "42, MG Road, Ward 12, Bengaluru, Karnataka",
+    "provenanceMeta": {
+      "provenance": "touch-selected",
+      "confidence": 1.0,
+      "timestamp": "2026-09-02T10:15:00Z"
+    }
+  },
+  "vitals": {
+    "bloodPressure": {
+      "systolic": {
+        "value": 165,
+        "unit": "mmHg",
+        "provenanceMeta": {
+          "provenance": "device-captured",
+          "confidence": 0.99,
+          "timestamp": "2026-09-02T10:16:10Z"
+        }
+      },
+      "diastolic": {
+        "value": 102,
+        "unit": "mmHg",
+        "provenanceMeta": {
+          "provenance": "device-captured",
+          "confidence": 0.99,
+          "timestamp": "2026-09-02T10:16:10Z"
+        }
+      }
+    },
+    "spo2": {
+      "value": 97,
+      "unit": "%",
+      "provenanceMeta": {
+        "provenance": "device-captured",
+        "confidence": 0.98,
+        "timestamp": "2026-09-02T10:16:25Z"
+      }
+    },
+    "heartRate": {
+      "value": 88,
+      "unit": "bpm",
+      "provenanceMeta": {
+        "provenance": "device-captured",
+        "confidence": 0.99,
+        "timestamp": "2026-09-02T10:16:25Z"
+      }
+    },
+    "temperature": {
+      "value": 99.1,
+      "unit": "°F",
+      "provenanceMeta": {
+        "provenance": "device-captured",
+        "confidence": 0.97,
+        "timestamp": "2026-09-02T10:16:40Z"
+      }
+    },
+    "bloodGlucose": {
+      "value": 245,
+      "unit": "mg/dL",
+      "provenanceMeta": {
+        "provenance": "device-captured",
+        "confidence": 0.96,
+        "timestamp": "2026-09-02T10:17:00Z"
+      }
+    }
+  },
+  "chiefComplaints": [
+    {
+      "symptom": "Acute Frontal Headache & Dizziness",
+      "duration": "3 days",
+      "severity": "Severe",
+      "provenanceMeta": {
+        "provenance": "patient-spoken",
+        "confidence": 0.94,
+        "timestamp": "2026-09-02T10:18:00Z"
+      }
+    },
+    {
+      "symptom": "Increased Thirst (Polydipsia) and Frequent Urination",
+      "duration": "2 weeks",
+      "severity": "Moderate",
+      "provenanceMeta": {
+        "provenance": "patient-spoken",
+        "confidence": 0.91,
+        "timestamp": "2026-09-02T10:18:15Z"
+      }
+    }
+  ],
+  "hpi": {
+    "narrative": "Patient reports progressive occipital and frontal headache over the last 3 days, exacerbated in the mornings. Associated with mild lightheadedness upon standing. Denies chest pain, dyspnea, or vision blurring. Mentions increased water intake and nocturia 3-4 times per night.",
+    "onset": "3 days ago",
+    "associatedSymptoms": ["Dizziness", "Polydipsia", "Nocturia"],
+    "provenanceMeta": {
+      "provenance": "patient-spoken",
+      "confidence": 0.92,
+      "timestamp": "2026-09-02T10:18:45Z"
+    }
+  },
+  "history": {
+    "pastDiagnoses": [
+      {
+        "condition": "Essential Hypertension",
+        "diagnosedYear": "2021",
+        "provenanceMeta": {
+          "provenance": "patient-spoken",
+          "confidence": 0.89
+        }
+      },
+      {
+        "condition": "Type 2 Diabetes Mellitus",
+        "diagnosedYear": "2019",
+        "provenanceMeta": {
+          "provenance": "scanned-document",
+          "confidence": 0.96
+        }
+      }
+    ],
+    "allergies": [
+      {
+        "allergen": "Sulfa Drugs",
+        "reaction": "Skin rash and itching",
+        "provenanceMeta": {
+          "provenance": "patient-spoken",
+          "confidence": 0.95
+        }
+      }
+    ],
+    "currentMedications": [
+      {
+        "medicationName": "Amlodipine",
+        "dosage": "5mg once daily",
+        "provenanceMeta": {
+          "provenance": "patient-spoken",
+          "confidence": 0.88
+        }
+      },
+      {
+        "medicationName": "Metformin",
+        "dosage": "500mg twice daily",
+        "provenanceMeta": {
+          "provenance": "scanned-document",
+          "confidence": 0.95
+        }
+      }
+    ],
+    "familyHistory": [
+      {
+        "relation": "Father",
+        "condition": "Coronary Artery Disease",
+        "provenanceMeta": {
+          "provenance": "patient-spoken",
+          "confidence": 0.85
+        }
+      }
+    ]
+  },
+  "ayushParameters": {
+    "nadi": "Pitta-Vata (Elevated pulse velocity, rapid rate)",
+    "jihva": "Sama (Mild white coating at base)",
+    "mala": "Normal consistency, once daily",
+    "mutra": "Prabhuta Mutrata (Increased frequency, clear pale yellow)",
+    "agni": "Tikshnagni (Intense appetite, hypermetabolic)",
+    "koshtha": "Madhyama (Normal bowel movements)",
+    "sparsha": "Ushna (Warm peripheral skin temperature)",
+    "drik": "Normal conjunctiva, no icterus",
+    "akriti": "Madhyama (Medium body frame)",
+    "vaya": "Madhya Vaya (Middle age)",
+    "provenanceMeta": {
+      "provenance": "touch-selected",
+      "confidence": 1.0,
+      "timestamp": "2026-09-02T10:19:30Z"
+    }
+  },
+  "ocrDocuments": [
+    {
+      "documentId": "DOC-OCR-9921",
+      "documentType": "Prescription",
+      "extractedDate": "2026-06-14",
+      "practitionerName": "Dr. K. V. Rao, DM Cardiology",
+      "extractedText": "Rx: Tab Telmisartan 40mg OD, Tab Metformin 500mg BD after meals. Advised HbA1c test and BP monitoring.",
+      "extractedMedications": [
+        {
+          "name": "Telmisartan",
+          "dosage": "40mg",
+          "frequency": "Once Daily"
+        },
+        {
+          "name": "Metformin",
+          "dosage": "500mg",
+          "frequency": "Twice Daily"
+        }
+      ],
+      "extractedLabs": [],
+      "fileUrl": "https://kiosk-cdn.medikiosk.in/ocr/prescriptions/DOC-OCR-9921.png",
+      "provenanceMeta": {
+        "provenance": "scanned-document",
+        "confidence": 0.95,
+        "timestamp": "2026-09-02T10:17:30Z"
+      }
+    },
+    {
+      "documentId": "DOC-OCR-9922",
+      "documentType": "LabReport",
+      "extractedDate": "2026-07-01",
+      "practitionerName": "Metropolis Healthcare Labs",
+      "extractedText": "Fasting Blood Sugar: 185 mg/dL. Post Prandial: 260 mg/dL. HbA1c: 8.4%. Serum Creatinine: 0.9 mg/dL.",
+      "extractedMedications": [],
+      "extractedLabs": [
+        {
+          "testName": "HbA1c",
+          "resultValue": "8.4",
+          "unit": "%",
+          "referenceRange": "< 5.7%"
+        },
+        {
+          "testName": "Fasting Blood Glucose",
+          "resultValue": "185",
+          "unit": "mg/dL",
+          "referenceRange": "70-99 mg/dL"
+        }
+      ],
+      "fileUrl": "https://kiosk-cdn.medikiosk.in/ocr/labs/DOC-OCR-9922.pdf",
+      "provenanceMeta": {
+        "provenance": "scanned-document",
+        "confidence": 0.98,
+        "timestamp": "2026-09-02T10:17:45Z"
+      }
+    }
+  ],
+  "triage": {
+    "triageLevel": "PRIORITY",
+    "urgencyScore": 7,
+    "recommendedDepartment": "General Medicine / Endocrinology",
+    "protocolNotes": "High Blood Pressure (165/102 mmHg) and elevated random blood glucose (245 mg/dL) require urgent physician consultation prior to routine queue.",
+    "provenanceMeta": {
+      "provenance": "touch-selected",
+      "confidence": 1.0,
+      "timestamp": "2026-09-02T10:20:00Z"
+    }
+  }
+}
