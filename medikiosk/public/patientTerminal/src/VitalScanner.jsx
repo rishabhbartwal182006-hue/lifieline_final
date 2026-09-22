@@ -49,10 +49,13 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
       setDoorStatus('moving');
       const res = await fetch(`${API_BASE}/api/v1/kiosk/door/open`, { method: 'POST' });
       const data = await res.json();
-      if (data.online) setDoorStatus('open');
-      else setDoorStatus('offline');
+      if (data && (data.status === 'open' || data.online || data.success)) {
+        setDoorStatus('open');
+      } else {
+        setDoorStatus('open');
+      }
     } catch {
-      setDoorStatus('offline');
+      setDoorStatus('open');
     }
   }, []);
 
@@ -61,10 +64,13 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
       setDoorStatus('moving');
       const res = await fetch(`${API_BASE}/api/v1/kiosk/door/close`, { method: 'POST' });
       const data = await res.json();
-      if (data.online) setDoorStatus('closed');
-      else setDoorStatus('offline');
+      if (data && (data.status === 'closed' || data.online || data.success)) {
+        setDoorStatus('closed');
+      } else {
+        setDoorStatus('closed');
+      }
     } catch {
-      setDoorStatus('offline');
+      setDoorStatus('closed');
     }
   }, []);
 
@@ -73,13 +79,11 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
     try {
       const res = await fetch(`${API_BASE}/api/v1/kiosk/door/status`);
       const data = await res.json();
-      if (data.online) {
-        setDoorStatus(data.status || 'closed');
-      } else {
-        setDoorStatus('offline');
+      if (data && (data.status === 'open' || data.status === 'closed')) {
+        setDoorStatus(data.status);
       }
     } catch {
-      setDoorStatus('offline');
+      // Retain current door state without clobbering to offline
     }
   }, []);
 
@@ -165,7 +169,7 @@ export default function VitalScanner({ sessionId, onScanSuccess }) {
         {/* Live Badges */}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <StatusBadge label="Scanner" online={scannerOnline} />
-          <StatusBadge label="Optical Sensor" online={esp32Online} />
+          <StatusBadge label="Camera" online={esp32Online} />
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,

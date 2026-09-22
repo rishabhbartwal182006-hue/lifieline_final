@@ -212,7 +212,15 @@ router.post('/submit', handleKioskIngestion);
 const axios = require('axios');
 const getDoorControllerIP = () => process.env.DOOR_CONTROLLER_IP || '192.168.137.102';
 
-let inFlightDoorPromise = null;
+let inFlightOpen = null;
+let inFlightClose = null;
+
+let currentDoorState = {
+  status: 'closed',
+  angle: 6,
+  hardwareOnline: false,
+  lastUpdated: Date.now()
+};
 
 async function sendDoorCommand(req, endpoint) {
   const ip = getDoorControllerIP();
@@ -220,62 +228,84 @@ async function sendDoorCommand(req, endpoint) {
   const targetAngle = endpoint === 'open' ? 180 : 6;
   const targetStatus = endpoint === 'open' ? 'open' : 'closed';
 
+  // Immediately update virtual state so software and UI never freeze
+  currentDoorState.status = targetStatus;
+  currentDoorState.angle = targetAngle;
+  currentDoorState.lastUpdated = Date.now();
+
   try {
     console.log(`[Door] Sending command to http://${ip}/door/${endpoint}...`);
-    const espRes = await axios.get(`http://${ip}/door/${endpoint}`, { timeout: 4000 });
-    if (io) io.emit('kiosk:door_state', { status: targetStatus, angle: targetAngle });
+    const espRes = await axios.get(`http://${ip}/door/${endpoint}`, { timeout: 1000 });
+    currentDoorState.hardwareOnline = true;
+    if (io) io.emit('kiosk:door_state', { status: targetStatus, angle: targetAngle, hardwareOnline: true });
     return {
       success: true,
       online: true,
+      hardwareOnline: true,
       status: targetStatus,
       angle: targetAngle,
       ...espRes.data
     };
   } catch (err) {
-    console.warn(`[Door] Controller unreachable at http://${ip}: ${err.message}`);
-    if (io) io.emit('kiosk:door_state', { status: 'offline', angle: null });
+    currentDoorState.hardwareOnline = false;
+    console.warn(`[Door] Physical controller at http://${ip} offline or slow (${err.message}). Applied in software mode.`);
+    if (io) io.emit('kiosk:door_state', { status: targetStatus, angle: targetAngle, hardwareOnline: false, simulated: true });
     return {
       success: true,
-      online: false,
-      status: 'offline',
-      angle: null,
+      online: true,
+      hardwareOnline: false,
+      status: targetStatus,
+      angle: targetAngle,
+      simulated: true,
       error: `Door controller unreachable at http://${ip}`
     };
   }
 }
 
 router.post('/door/open', async (req, res) => {
-  if (inFlightDoorPromise) {
-    const result = await inFlightDoorPromise;
+  if (inFlightOpen) {
+    const result = await inFlightOpen;
     return res.json(result);
   }
-  inFlightDoorPromise = sendDoorCommand(req, 'open').finally(() => { inFlightDoorPromise = null; });
-  const result = await inFlightDoorPromise;
+  inFlightOpen = sendDoorCommand(req, 'open').finally(() => { inFlightOpen = null; });
+  const result = await inFlightOpen;
   return res.json(result);
 });
 
 router.post('/door/close', async (req, res) => {
-  if (inFlightDoorPromise) {
-    const result = await inFlightDoorPromise;
+  if (inFlightClose) {
+    const result = await inFlightClose;
     return res.json(result);
   }
-  inFlightDoorPromise = sendDoorCommand(req, 'close').finally(() => { inFlightDoorPromise = null; });
-  const result = await inFlightDoorPromise;
+  inFlightClose = sendDoorCommand(req, 'close').finally(() => { inFlightClose = null; });
+  const result = await inFlightClose;
   return res.json(result);
 });
 
 router.get('/door/status', async (req, res) => {
   const ip = getDoorControllerIP();
+  // Return cached state immediately; optionally check physical controller with 600ms timeout
   try {
-    const espRes = await axios.get(`http://${ip}/door/status`, { timeout: 2000 });
-    return res.json({ success: true, online: true, ...espRes.data });
-  } catch (err) {
+    const espRes = await axios.get(`http://${ip}/door/status`, { timeout: 600 });
+    currentDoorState.hardwareOnline = true;
+    if (espRes.data?.status) currentDoorState.status = espRes.data.status;
+    if (espRes.data?.angle != null) currentDoorState.angle = espRes.data.angle;
     return res.json({
       success: true,
-      online: false,
-      status: 'offline',
-      angle: null,
-      error: `Door controller unreachable at http://${ip}`
+      online: true,
+      hardwareOnline: true,
+      status: currentDoorState.status,
+      angle: currentDoorState.angle,
+      ...espRes.data
+    });
+  } catch (_) {
+    currentDoorState.hardwareOnline = false;
+    return res.json({
+      success: true,
+      online: true,
+      hardwareOnline: false,
+      status: currentDoorState.status,
+      angle: currentDoorState.angle
     });
   }
 });

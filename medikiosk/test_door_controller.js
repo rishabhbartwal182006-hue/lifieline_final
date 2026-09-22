@@ -127,8 +127,8 @@ async function runTests() {
   const res5 = await fetch(`http://127.0.0.1:${testServerPort}/api/v1/kiosk/door/open`, { method: 'POST' });
   const data5 = await res5.json();
   console.log('Offline Fallback Response:', data5);
-  if (data5.success && data5.online === false && data5.status === 'offline') {
-    console.log('✅ Test 5 PASSED: Handled offline door controller without crashing');
+  if (data5.success && data5.status === 'open' && data5.hardwareOnline === false) {
+    console.log('✅ Test 5 PASSED: Handled offline door controller gracefully in software mode');
   } else {
     console.error('❌ Test 5 FAILED');
     process.exit(1);

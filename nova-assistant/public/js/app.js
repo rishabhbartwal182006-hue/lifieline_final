@@ -87,10 +87,15 @@ const DOOR_OPEN_PHRASES = [
   /गेट\s*खोल/i,
   /स्लॉट\s*खोल/i,
   /बे\s*खोल/i,
-  /door\s*kholo/i,
-  /kholo/i,
-  /open\s*door/i,
+  /darw[a|z|j]*\s*khol/i,
+  /darwaza\s*open/i,
+  /darwaja\s*open/i,
+  /door\s*khol/i,
   /door\s*open/i,
+  /open\s*door/i,
+  /\bkholo\b/i,
+  /\bkhol\s+do\b/i,
+  /\bkholiye\b/i,
   /\bopen\s+(the\s+)?(bay|door|kiosk|slot|gate)\b/i,
   /\b(bay|door|kiosk|slot|gate)\s+open\b/i
 ];
@@ -102,9 +107,15 @@ const DOOR_CLOSE_PHRASES = [
   /गेट\s*बंद/i,
   /स्लॉट\s*बंद/i,
   /बे\s*बंद/i,
+  /darw[a|z|j]*\s*band/i,
+  /darwaza\s*close/i,
+  /darwaja\s*close/i,
   /door\s*band/i,
-  /close\s*door/i,
   /door\s*close/i,
+  /close\s*door/i,
+  /\bband\s*karo\b/i,
+  /\bband\s+do\b/i,
+  /\bband\s+kijiye\b/i,
   /\bclose\s+(the\s+)?(bay|door|kiosk|slot|gate)\b/i,
   /\b(bay|door|kiosk|slot|gate)\s+close\b/i
 ];
@@ -682,7 +693,7 @@ async function handleUserUtterance(transcript) {
     console.error("[NOVA] Chat/TTS error:", msg);
 
     // If door opened or vitals flow was triggered, NEVER speak an error notice!
-    if (window.waitingForSugarTest) {
+    if (window.waitingForSugarTest || isDoorOpenCommand(transcript)) {
       console.log("[NOVA] Vitals/door action in progress — suppressing error speech");
       return;
     }
@@ -695,16 +706,11 @@ async function handleUserUtterance(transcript) {
       await playBackupAudio();   // waits for full playback, prevents any overlap
       setStatus("कृपया दोबारा कोशिश करें या इंटरनेट जाँचें");
     } else {
-      // Internet is active, but server request failed
-      setStatus("क्षमा करें, उत्तर में देरी हो रही है...");
-      try {
-        const isHi = typeof Conversation !== "undefined" && Conversation.getLanguage()?.startsWith("hi");
-        const retryMsg = isHi
-          ? "क्षमा करें, मुझे उत्तर प्राप्त करने में थोड़ा समय लग रहा है। कृपया दोबारा कहें।"
-          : "Sorry, the response took a bit longer. Please say that again.";
-        await Conversation.speak(retryMsg);
-      } catch (_) {}
-      await sleepBriefly(800);
+      // Internet is active — log and gracefully recover without speaking annoying false timeout notices
+      console.warn("[NOVA] Utterance handling completed with warning:", msg);
+      setStatus("बात करने के लिए टैप करें या 'Hey Nova' कहें");
+      goToSleep();
+      return;
     }
   }
 
@@ -892,7 +898,6 @@ const manualWakeBtn = document.getElementById("manual-wake-btn");
 manualWakeBtn.addEventListener("click", async () => {
   if (state !== "SLEEPING") return;
   try { await Conversation.resumeAudioContext(); } catch (_) {}
-  try { MicCapture.reset(); } catch (_) {}
   loadBackupAudio(); // Ensure backup audio is primed on user tap
 
   // If user taps mic while offline, trigger backup notice immediately
@@ -916,17 +921,6 @@ manualWakeBtn.addEventListener("click", async () => {
 PatientBridge.setOnEndSession(() => {
   if (state !== "SLEEPING") goToSleep();
 });
-
-// --- audio device plug / unplug listener ---
-if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-  navigator.mediaDevices.addEventListener("devicechange", () => {
-    console.log("[NOVA App] Audio hardware device changed");
-    try { MicCapture.reset(); } catch (_) {}
-    if (state === "SLEEPING") {
-      setStatus("माइक अपडेट हुआ — बात करने के लिए टैप करें या 'Hey Nova' कहें");
-    }
-  });
-}
 
 // --- window online / offline event listeners ---
 window.addEventListener("offline", () => {
@@ -953,16 +947,4 @@ window.addEventListener("DOMContentLoaded", () => {
   loadBackupAudio();
 
   PatientBridge.ready();
-
-  // On initial load or page refresh, command kiosk bay door to close (6 deg)
-  const backendHost = window.location.hostname || 'localhost';
-  fetch(`http://${backendHost}:4000/api/v1/kiosk/door/close`, { method: "POST" }).catch(() => {});
-});
-
-// Close door on page refresh / unload
-window.addEventListener("beforeunload", () => {
-  const backendHost = window.location.hostname || 'localhost';
-  try {
-    fetch(`http://${backendHost}:4000/api/v1/kiosk/door/close`, { method: "POST", keepalive: true }).catch(() => {});
-  } catch (_) {}
 });
