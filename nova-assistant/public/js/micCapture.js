@@ -94,7 +94,7 @@ const MicCapture = (() => {
     maxWaitMs = Infinity,
     maxDurationMs = 8000,
     silenceMs = 1000,
-    speechThreshold = 0.012
+    speechThreshold = 0.005
   } = {}) {
     const opId = ++currentOpId;
     await SharedAudio.resumeAudioContext();

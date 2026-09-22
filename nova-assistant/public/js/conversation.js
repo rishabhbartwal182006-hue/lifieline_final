@@ -200,35 +200,24 @@ const Conversation = (() => {
           hadSpeech = true;
           networkErrorCount = 0; // successful result means network is working — reset counter
 
-          let currentFinal = "";
-          let currentInterim = "";
+          let sessionFinal = "";
+          let sessionInterim = "";
           for (let i = 0; i < event.results.length; ++i) {
             const item = event.results[i];
             if (item.isFinal) {
-              currentFinal += item[0].transcript + " ";
+              sessionFinal += item[0].transcript + " ";
             } else {
-              currentInterim += item[0].transcript;
+              sessionInterim += item[0].transcript;
             }
           }
 
-          // Merge accumulated finals so we don't lose words across Android restarts
-          if (currentFinal.trim()) {
-            finalTranscript = (finalTranscript + " " + currentFinal).trim();
-          }
-
-          // DISPLAY FIX: Show only what the user is saying RIGHT NOW.
-          // finalTranscript contains the FULL history across all restarts — showing
-          // that concatenated with currentInterim causes "my my name my name is..." duplication.
-          // Instead, show just the latest recognized chunk: current session's final OR the interim.
-          const liveDisplay = (currentFinal.trim() || currentInterim.trim());
-          if (liveDisplay && onInterim) onInterim(liveDisplay);
+          finalTranscript = (sessionFinal.trim() || sessionInterim.trim());
+          if (finalTranscript && onInterim) onInterim(finalTranscript);
 
           // After 1.8s of post-speech silence → finalize
-          const hasContent = finalTranscript.trim() || currentInterim.trim();
-          if (hasContent) {
+          if (finalTranscript) {
             speechPauseTimer = setTimeout(() => {
-              const best = (finalTranscript || currentInterim).trim();
-              if (best) finish(null, best);
+              if (finalTranscript) finish(null, finalTranscript);
             }, 1800);
           }
         };
@@ -255,14 +244,11 @@ const Conversation = (() => {
               finish(new Error("stt-fallback-whisper"));
             }
           } else if (err === "no-speech") {
-            // Android fires no-speech when it gives up. If we have partial text, use it.
-            // If not, just let onend handle the restart.
             if (finalTranscript.trim()) {
               finish(null, finalTranscript.trim());
             }
             // else: let onend fire → restart
           } else {
-            // audio-capture, etc. — use partial if any, else let onend restart
             if (finalTranscript.trim()) {
               finish(null, finalTranscript.trim());
             }
@@ -283,15 +269,13 @@ const Conversation = (() => {
 
           // If user has spoken and we have text, restart to keep accumulating mid-sentence
           if (hadSpeech && finalTranscript.trim()) {
-            // Pause timer already cleared because it didn't fire yet → restart and keep listening
             restartCount++;
-            setTimeout(spawnSession, 80);  // tiny gap avoids Chrome "already started" error
+            setTimeout(spawnSession, 80);
             return;
           }
 
-          // No speech yet and session ended quickly → Android killing idle sessions
-          // Transparently restart to keep looking for the patient's voice
-          if (!hadSpeech && elapsed < 8000) {
+          // If user has not spoken yet and overall silence timeout has not expired, keep listening!
+          if (!hadSpeech && (Date.now() - sessionStartedAt) < silenceTimeoutMs && restartCount < MAX_RESTARTS) {
             restartCount++;
             setTimeout(spawnSession, 100);
             return;
@@ -328,7 +312,7 @@ const Conversation = (() => {
    * Listens for a single user utterance.
    * Priority: Google Free STT (SpeechRecognition) -> Fallback: MicCapture (Groq Whisper)
    */
-  async function listenOnce({ silenceTimeoutMs = 10000, onInterim = null } = {}) {
+  async function listenOnce({ silenceTimeoutMs = 15000, onInterim = null } = {}) {
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       throw new Error("stt-network");
     }
@@ -338,9 +322,11 @@ const Conversation = (() => {
     // 1. PRIMARY: Use Google Free STT Model
     if (SpeechRecognition) {
       try {
-        console.log("[STT] Listening via Google Free STT Model (hi-IN)...");
+        console.log("[STT] Listening via Google Free STT Model (" + currentLang + ")...");
         const transcript = await listenWithGoogleSTT({ silenceTimeoutMs, onInterim });
-        return transcript;
+        if (transcript && transcript.trim()) {
+          return transcript.trim();
+        }
       } catch (err) {
         if (err.message === "aborted") throw err;
         if (err.message === "permission-denied") throw err;  // bubble up for UI error state
@@ -348,11 +334,7 @@ const Conversation = (() => {
           throw err;        // genuine offline — play backup audio
         }
         console.warn("[STT] Google STT ended (" + err.message + ") — falling back to Groq Whisper");
-        // Only sleep if the user had full listening time and stayed silent
-        if (err.message === "timeout") {
-          throw err;
-        }
-        // Any other error (including stt-fallback-whisper) → attempt Whisper fallback
+        // Fall through to Whisper instead of giving up immediately
       }
     }
 
@@ -361,10 +343,10 @@ const Conversation = (() => {
     let blob;
     try {
       blob = await MicCapture.captureUtterance({
-        maxWaitMs: silenceTimeoutMs,
+        maxWaitMs: 8000,
         maxDurationMs: 15000,
         silenceMs: 1200,
-        speechThreshold: 0.008
+        speechThreshold: 0.005
       });
     } catch (err) {
       throw err.message === "timeout" ? new Error("timeout") : err;
