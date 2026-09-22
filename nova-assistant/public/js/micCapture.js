@@ -28,7 +28,41 @@ const MicCapture = (() => {
   let sourceNode = null;
   let currentOpId = 0; // bumped on abort() to invalidate any in-flight operation
 
+  function isStreamActive(stream) {
+    if (!stream) return false;
+    const tracks = stream.getAudioTracks ? stream.getAudioTracks() : [];
+    return tracks.length > 0 && tracks.some((t) => t.readyState === "live" && t.enabled);
+  }
+
+  function reset() {
+    if (sharedStream) {
+      try {
+        sharedStream.getTracks().forEach((t) => t.stop());
+      } catch (_) {}
+      sharedStream = null;
+    }
+    if (sourceNode) {
+      try {
+        sourceNode.disconnect();
+      } catch (_) {}
+      sourceNode = null;
+    }
+    analyser = null;
+  }
+
+  if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener("devicechange", () => {
+      console.log("[MicCapture] Audio devicechange detected (plug/unplug), resetting stream cache");
+      reset();
+    });
+  }
+
   async function getStream() {
+    if (sharedStream && !isStreamActive(sharedStream)) {
+      console.warn("[MicCapture] Cached stream is inactive or ended, refreshing...");
+      reset();
+    }
+
     if (!sharedStream) {
       if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== "function") {
         throw new Error("Microphone API unavailable over insecure HTTP context.");
@@ -40,13 +74,23 @@ const MicCapture = (() => {
           autoGainControl: true
         }
       });
+
+      // Bind ended event so unplugging mic resets cache immediately
+      const tracks = sharedStream.getAudioTracks ? sharedStream.getAudioTracks() : [];
+      tracks.forEach((track) => {
+        track.addEventListener("ended", () => {
+          console.warn("[MicCapture] Audio track ended unexpectedly, clearing stream");
+          reset();
+        });
+      });
     }
     return sharedStream;
   }
 
   async function ensureAnalyser() {
     await SharedAudio.resumeAudioContext();
-    if (analyser) return analyser;
+    if (analyser && isStreamActive(sharedStream)) return analyser;
+    reset();
     const stream = await getStream();
     // Uses the SAME AudioContext as conversation.js's TTS playback (via
     // SharedAudio) — see sharedAudioContext.js for why this must not be a
@@ -94,7 +138,7 @@ const MicCapture = (() => {
     maxWaitMs = Infinity,
     maxDurationMs = 8000,
     silenceMs = 1000,
-    speechThreshold = 0.005
+    speechThreshold = 0.012
   } = {}) {
     const opId = ++currentOpId;
     await SharedAudio.resumeAudioContext();
@@ -196,5 +240,5 @@ const MicCapture = (() => {
     return { transcript: (transcript || "").trim(), noSpeechProb: noSpeechProb ?? 0 };
   }
 
-  return { getStream, captureUtterance, abort, transcribe };
+  return { getStream, captureUtterance, abort, transcribe, reset };
 })();

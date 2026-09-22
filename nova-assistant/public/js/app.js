@@ -6,7 +6,7 @@
  * ACTIVE_LISTENING -> silence for SLEEP_TIMEOUT_MS -> SLEEPING (session/history cleared)
  * ACTIVE_LISTENING -> user says a sleep phrase ("bye", "go to sleep", ...) -> short farewell -> SLEEPING
  */
-const SLEEP_TIMEOUT_MS = 16000; // Increased to 16s so patients have ample time to respond
+const SLEEP_TIMEOUT_MS = 9000; // spec: ~8-10s configurable
 
 // ─── Backup Audio (offline / slow-response fallback) ──────────────────────
 // Pre-recorded PCM file generated from the same Cartesia TTS voice.
@@ -451,9 +451,6 @@ function setStatus(text) {
 
 function showListeningUI(show) {
   listeningIndicator.classList.toggle("hidden", !show);
-  if (manualWakeBtn) {
-    manualWakeBtn.classList.toggle("mic-active", show);
-  }
 }
 
 function showTranscript(text) {
@@ -885,11 +882,17 @@ async function handleStart() {
 
 startBtn.addEventListener("click", handleStart);
 
-// --- manual wake / push-to-talk override ---
+// --- manual wake override ---
+// Skips voice-based wake-word detection entirely and jumps straight into
+// the same flow "Hey Nova" would trigger. Useful when the mic/wake-word
+// isn't reliable yet, or in a loud/quiet environment where saying "Hey
+// Nova" out loud isn't practical.
 const manualWakeBtn = document.getElementById("manual-wake-btn");
 
 manualWakeBtn.addEventListener("click", async () => {
+  if (state !== "SLEEPING") return;
   try { await Conversation.resumeAudioContext(); } catch (_) {}
+  try { MicCapture.reset(); } catch (_) {}
   loadBackupAudio(); // Ensure backup audio is primed on user tap
 
   // If user taps mic while offline, trigger backup notice immediately
@@ -898,29 +901,13 @@ manualWakeBtn.addEventListener("click", async () => {
     return;
   }
 
-  // If Nova is currently speaking or greeting, halt speech immediately (barge-in)
-  if (state === "SPEAKING" || state === "GREETING") {
-    Conversation.stopSpeaking();
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === "function") {
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+      s.getTracks().forEach(t => t.stop());
+    } catch (_) {}
   }
-
-  // Stop wake-word listener since patient explicitly tapped the microphone
-  WakeWordListener.stop();
-
-  // Reset any active listening cycle and start fresh
-  Conversation.stopListening();
-
-  state = "ACTIVE_LISTENING";
-  setStatus("सुन रही हूँ... बोलिए");
-  showListeningUI(true);
-  showTranscript(null);
-
-  // Resume video controller if it was resting/sleeping
-  VideoController.setIdle?.(false);
-  VideoController.toRest();
-  PatientBridge.sessionStarted();
-
-  // Run listening turn immediately
-  runListenTurn();
+  onWakeWordDetected();
 });
 
 // --- host app bridge ---
@@ -929,6 +916,17 @@ manualWakeBtn.addEventListener("click", async () => {
 PatientBridge.setOnEndSession(() => {
   if (state !== "SLEEPING") goToSleep();
 });
+
+// --- audio device plug / unplug listener ---
+if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+  navigator.mediaDevices.addEventListener("devicechange", () => {
+    console.log("[NOVA App] Audio hardware device changed");
+    try { MicCapture.reset(); } catch (_) {}
+    if (state === "SLEEPING") {
+      setStatus("माइक अपडेट हुआ — बात करने के लिए टैप करें या 'Hey Nova' कहें");
+    }
+  });
+}
 
 // --- window online / offline event listeners ---
 window.addEventListener("offline", () => {

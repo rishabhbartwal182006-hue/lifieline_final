@@ -99,10 +99,16 @@ const WakeWordListener = (() => {
   }
 
   let activeWakeRecognizer = null;
+  let restartTimer = null;
 
-  function startWithGoogle(onWake) {
+  function spawnGoogleWakeRecognizer(onWake) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) return false;
+    if (!SpeechRecognition || !enabled) return false;
+
+    if (activeWakeRecognizer) {
+      try { activeWakeRecognizer.abort(); } catch (_) {}
+      activeWakeRecognizer = null;
+    }
 
     try {
       const recognizer = new SpeechRecognition();
@@ -131,25 +137,19 @@ const WakeWordListener = (() => {
           console.warn("[Google WakeWord] Permanent error:", e.error);
           return;
         }
-        // no-speech, network, audio-capture → Android killed session, restart quietly
-        console.log("[Google WakeWord] Recoverable error:", e.error, "— will restart on onend");
+        // no-speech, network, audio-capture → restart quietly with fresh instance
+        console.log("[Google WakeWord] Recoverable error:", e.error, "— restarting fresh instance");
       };
 
       recognizer.onend = () => {
         if (enabled && activeWakeRecognizer === recognizer) {
-          // Android killed the session (even with continuous=true) — restart immediately
-          setTimeout(() => {
-            if (enabled && activeWakeRecognizer === recognizer) {
-              try { recognizer.start(); } catch (_) {
-                // If start() throws "already started" race, wait a bit longer
-                setTimeout(() => {
-                  if (enabled && activeWakeRecognizer === recognizer) {
-                    try { recognizer.start(); } catch (_2) {}
-                  }
-                }, 300);
-              }
+          activeWakeRecognizer = null;
+          clearTimeout(restartTimer);
+          restartTimer = setTimeout(() => {
+            if (enabled) {
+              spawnGoogleWakeRecognizer(onWake);
             }
-          }, 150);
+          }, 200);
         }
       };
 
@@ -158,8 +158,23 @@ const WakeWordListener = (() => {
       return true;
     } catch (e) {
       console.warn("[Google WakeWord] Could not start, falling back to MicCapture:", e);
+      activeWakeRecognizer = null;
       return false;
     }
+  }
+
+  if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener("devicechange", () => {
+      if (enabled) {
+        console.log("[WakeWord] Device changed while listening for wake word — re-spawning recognizer");
+        clearTimeout(restartTimer);
+        restartTimer = setTimeout(() => {
+          if (enabled) {
+            spawnGoogleWakeRecognizer(onWakeCallback);
+          }
+        }, 500);
+      }
+    });
   }
 
   function start(onWake) {
@@ -168,7 +183,7 @@ const WakeWordListener = (() => {
     enabled = true;
 
     // 1. Prioritize Google Free SpeechRecognition on tablets/Chrome
-    const started = startWithGoogle(onWake);
+    const started = spawnGoogleWakeRecognizer(onWake);
     if (!started) {
       // 2. Fallback to MicCapture (Groq Whisper)
       loopPromise = loop();
@@ -177,6 +192,8 @@ const WakeWordListener = (() => {
 
   function stop() {
     enabled = false;
+    clearTimeout(restartTimer);
+    restartTimer = null;
     if (activeWakeRecognizer) {
       try {
         activeWakeRecognizer.abort();
