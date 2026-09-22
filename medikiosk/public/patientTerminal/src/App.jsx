@@ -209,7 +209,7 @@ function App() {
     return () => window.removeEventListener("message", handleNovaMessage);
   }, []);
 
-  // ── Auto-close bay door immediately on page load or refresh ──
+  // ── Auto-close bay door immediately on page load, refresh, or unload ──
   useEffect(() => {
     const backendHost = window.location.hostname || 'localhost';
     const closeUrl = (window.location.port === '5173')
@@ -217,6 +217,18 @@ function App() {
       : '/api/v1/kiosk/door/close';
     console.log("[Door] Page loaded/refreshed — auto-closing bay door to 6 deg default");
     fetch(closeUrl, { method: "POST" }).catch(() => {});
+
+    const handleUnload = () => {
+      try {
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(closeUrl);
+        } else {
+          fetch(closeUrl, { method: "POST", keepalive: true }).catch(() => {});
+        }
+      } catch (_) {}
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
   // ── Form Flow: Auto-open door when entering Step 7 (Taking vitals) ──

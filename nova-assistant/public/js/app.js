@@ -938,6 +938,20 @@ window.addEventListener("online", () => {
   }
 });
 
+function requestDoorClose() {
+  const backendHost = window.location.hostname || 'localhost';
+  const closeUrl = `http://${backendHost}:4000/api/v1/kiosk/door/close`;
+  try {
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(closeUrl);
+    } else {
+      fetch(closeUrl, { method: "POST", keepalive: true }).catch(() => {});
+    }
+  } catch (_) {
+    fetch(closeUrl, { method: "POST" }).catch(() => {});
+  }
+}
+
 // --- boot ---
 window.addEventListener("DOMContentLoaded", () => {
   VideoController.init();
@@ -947,4 +961,10 @@ window.addEventListener("DOMContentLoaded", () => {
   loadBackupAudio();
 
   PatientBridge.ready();
+
+  // Ensure bay door is closed on load or page refresh
+  requestDoorClose();
 });
+
+// Close door on page refresh or navigation
+window.addEventListener("beforeunload", requestDoorClose);

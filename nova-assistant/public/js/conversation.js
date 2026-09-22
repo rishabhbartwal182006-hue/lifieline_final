@@ -108,9 +108,7 @@ const Conversation = (() => {
 
       // --- Shared state across all restart cycles ---
       let settled = false;
-      let priorSessionsTranscript = "";  // accumulated from completed sessions prior to current restart
-      let sessionFinal = "";             // final results accumulated strictly within the CURRENT session
-      let finalTranscript = "";          // combined prior + current session transcript
+      let finalTranscript = "";          // accumulated across all restarts
       let initialSilenceTimer = null;    // fires if user never speaks
       let speechPauseTimer = null;       // fires 1.8s after last speech detected
       let currentRecognizer = null;
@@ -119,16 +117,6 @@ const Conversation = (() => {
       let hadSpeech = false;             // true once user has spoken at least once
       let networkErrorCount = 0;        // consecutive "network" errors → internet may be down
       const MAX_NETWORK_ERRORS = 3;     // after this many, stop retrying & play backup audio
-
-      const onDeviceChange = () => {
-        console.log("[Google STT] Audio device change detected during listening session");
-        if (!settled && currentRecognizer) {
-          try { currentRecognizer.abort(); } catch (_) {}
-        }
-      };
-      if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
-        navigator.mediaDevices.addEventListener("devicechange", onDeviceChange);
-      }
 
       // Update the externally-visible activeRecognition handle so stopListening() works
       function setActive(rec) {
@@ -139,9 +127,6 @@ const Conversation = (() => {
       function cleanup() {
         if (initialSilenceTimer) { clearTimeout(initialSilenceTimer); initialSilenceTimer = null; }
         if (speechPauseTimer)    { clearTimeout(speechPauseTimer);    speechPauseTimer = null; }
-        if (typeof navigator !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.removeEventListener) {
-          navigator.mediaDevices.removeEventListener("devicechange", onDeviceChange);
-        }
         activeRecognition = null;
         currentRecognizer = null;
       }
@@ -215,23 +200,27 @@ const Conversation = (() => {
           hadSpeech = true;
           networkErrorCount = 0; // successful result means network is working — reset counter
 
-          let currentChunkFinal = "";
+          let currentFinal = "";
           let currentInterim = "";
           for (let i = 0; i < event.results.length; ++i) {
             const item = event.results[i];
             if (item.isFinal) {
-              currentChunkFinal += item[0].transcript + " ";
+              currentFinal += item[0].transcript + " ";
             } else {
               currentInterim += item[0].transcript;
             }
           }
 
-          // currentChunkFinal contains all final results for this session from index 0
-          sessionFinal = currentChunkFinal.trim();
-          finalTranscript = (priorSessionsTranscript ? priorSessionsTranscript + " " + sessionFinal : sessionFinal).trim();
+          // Merge accumulated finals so we don't lose words across Android restarts
+          if (currentFinal.trim()) {
+            finalTranscript = (finalTranscript + " " + currentFinal).trim();
+          }
 
-          // DISPLAY FIX: Show only what the user is saying right now (session final or interim)
-          const liveDisplay = (sessionFinal || currentInterim.trim());
+          // DISPLAY FIX: Show only what the user is saying RIGHT NOW.
+          // finalTranscript contains the FULL history across all restarts — showing
+          // that concatenated with currentInterim causes "my my name my name is..." duplication.
+          // Instead, show just the latest recognized chunk: current session's final OR the interim.
+          const liveDisplay = (currentFinal.trim() || currentInterim.trim());
           if (liveDisplay && onInterim) onInterim(liveDisplay);
 
           // After 1.8s of post-speech silence → finalize
@@ -265,20 +254,6 @@ const Conversation = (() => {
               console.log("[Google STT] Online fallback: Switching seamlessly to Groq Whisper STT...");
               finish(new Error("stt-fallback-whisper"));
             }
-          } else if (err === "audio-capture") {
-            console.warn("[Google STT] Audio capture error (mic disconnected or unavailable)");
-            if (finalTranscript.trim()) {
-              finish(null, finalTranscript.trim());
-            } else if (restartCount < MAX_RESTARTS) {
-              // Mic was unplugged/plugged — wait 800ms for OS audio routing to settle, then restart session
-              restartCount++;
-              setTimeout(() => {
-                if (!settled) spawnSession();
-              }, 800);
-              return;
-            } else {
-              finish(new Error("audio-capture"));
-            }
           } else if (err === "no-speech") {
             // Android fires no-speech when it gives up. If we have partial text, use it.
             // If not, just let onend handle the restart.
@@ -287,7 +262,7 @@ const Conversation = (() => {
             }
             // else: let onend fire → restart
           } else {
-            // Other errors — use partial if any, else let onend restart
+            // audio-capture, etc. — use partial if any, else let onend restart
             if (finalTranscript.trim()) {
               finish(null, finalTranscript.trim());
             }
@@ -308,8 +283,7 @@ const Conversation = (() => {
 
           // If user has spoken and we have text, restart to keep accumulating mid-sentence
           if (hadSpeech && finalTranscript.trim()) {
-            priorSessionsTranscript = finalTranscript;
-            sessionFinal = "";
+            // Pause timer already cleared because it didn't fire yet → restart and keep listening
             restartCount++;
             setTimeout(spawnSession, 80);  // tiny gap avoids Chrome "already started" error
             return;
@@ -318,8 +292,6 @@ const Conversation = (() => {
           // No speech yet and session ended quickly → Android killing idle sessions
           // Transparently restart to keep looking for the patient's voice
           if (!hadSpeech && elapsed < 8000) {
-            priorSessionsTranscript = finalTranscript;
-            sessionFinal = "";
             restartCount++;
             setTimeout(spawnSession, 100);
             return;
@@ -636,10 +608,9 @@ const Conversation = (() => {
       });
 
       schedulingChain = schedulingChain.catch((err) => {
-        if (!settled) {
-          settled = true;
-          rejectDone(err);
-        }
+        console.warn("[GaplessSpeaker] Audio scheduling warning (recovering gracefully):", err);
+        completedCount++;
+        checkCompletion();
       });
     }
 

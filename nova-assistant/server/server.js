@@ -30,8 +30,14 @@ app.get("/api/health", (req, res) => {
 
 app.get("/favicon.ico", (req, res) => res.status(204).end());
 
-// Serve the frontend (Chromium kiosk points here).
-app.use(express.static(path.join(__dirname, "..", "public")));
+// Serve the frontend (Chromium kiosk points here) with no-cache headers to ensure live code updates
+app.use(express.static(path.join(__dirname, "..", "public"), {
+  etag: false,
+  maxAge: 0,
+  setHeaders: (res) => {
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  }
+}));
 
 const https = require("https");
 const fs = require("fs");
